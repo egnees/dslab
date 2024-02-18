@@ -256,7 +256,7 @@ impl<T: EventData> EventFuture<T> {
 pub(crate) struct EmptyData {}
 
 #[derive(Clone)]
-pub(crate) struct EventPromise {
+pub struct EventPromise {
     state: Rc<RefCell<dyn EventResultSetter>>,
 }
 

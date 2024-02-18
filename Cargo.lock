@@ -157,6 +157,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46016233fc1bb55c23b856fe556b7db6ccd05119a0a392e04f0b3b7c79058f16"
 
 [[package]]
+name = "async-dslab-mp"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "clap 3.2.25",
+ "dslab-core",
+ "dslab-network",
+ "dslab-storage",
+ "env_logger 0.9.3",
+ "futures",
+ "log 0.4.20",
+ "priority-queue",
+ "rand 0.8.5",
+ "rand_pcg 0.3.1",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
 name = "async-event-details"
 version = "0.1.0"
 dependencies = [
@@ -205,6 +225,17 @@ dependencies = [
  "log 0.4.20",
  "serde",
  "sugars",
+]
+
+[[package]]
+name = "async-trait"
+version = "0.1.77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c980ee35e870bd1a4d2c8294d4c04d0499e67bca1e4b5cefcc693c2fa00caea9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
@@ -965,6 +996,26 @@ dependencies = [
 
 [[package]]
 name = "dslab-mp"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "downcast-rs",
+ "dslab-core",
+ "dyn-clone",
+ "lazy_static",
+ "log 0.4.20",
+ "ordered-float",
+ "rand 0.8.5",
+ "rand_pcg 0.3.1",
+ "regex",
+ "rstest",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
+name = "dslab-mp-async"
 version = "0.1.0"
 dependencies = [
  "colored",

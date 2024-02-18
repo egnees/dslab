@@ -251,7 +251,9 @@ impl Network {
         // The fixed part of data transfer time (latency) is modeled by the delayed StartDataTransfer event.
         // The remaining part is calculated by the underlying network model (see handling of StartDataTransfer event).
         let delay = self.latency(src, dst);
+
         self.ctx.emit_self(StartDataTransfer { dt }, delay);
+
         transfer_id
     }
 

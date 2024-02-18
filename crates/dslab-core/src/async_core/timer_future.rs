@@ -62,7 +62,7 @@ pub(crate) type TimerId = u64;
 
 /// Timer will set the given `state` as completed at time.
 #[derive(Clone)]
-pub(crate) struct TimerPromise {
+pub struct TimerPromise {
     /// Unique identifier of timer.
     pub id: TimerId,
     /// Id of simulation component that set the timer.

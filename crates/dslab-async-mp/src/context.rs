@@ -17,7 +17,7 @@ use crate::node::{ProcessEvent, TimerBehavior};
 #[derive(Clone)]
 pub struct Context {
     proc_name: String,
-    time: f64,
+    clock_skew: f64,
     rng: Rc<RefCell<Box<dyn RandomProvider>>>,
     actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
     sim_ctx: Rc<RefCell<SimulationContext>>,
@@ -51,10 +51,9 @@ impl Context {
         sim_ctx: Rc<RefCell<SimulationContext>>,
         clock_skew: f64,
     ) -> Self {
-        let time = sim_ctx.borrow().time() + clock_skew;
         Self {
             proc_name,
-            time,
+            clock_skew,
             rng: Rc::new(RefCell::new(Box::new(SimulationRng {
                 sim_ctx: sim_ctx.clone(),
             }))),
@@ -65,7 +64,7 @@ impl Context {
 
     /// Returns the current time from the local node clock.
     pub fn time(&self) -> f64 {
-        self.time
+        self.sim_ctx.borrow().time() + self.clock_skew
     }
 
     /// Returns a random float in the range `[0, 1)`.

@@ -48,7 +48,9 @@ impl EventHandler for Node {
             LocalMessageSentAction { msg } => {
                 self.local_messages.push(msg);
             }
-            DataTransferCompleted { dt: _ } => {}
+            DataTransferCompleted { dt: _ } => {
+                println!("data transfer completed (in handler)")
+            }
             NetworkMessageReceived { from, msg } => {
                 self.process.on_message(&msg, from, self.ctx.clone()).unwrap();
             }

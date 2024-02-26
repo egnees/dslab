@@ -896,6 +896,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "dslab-async-mp"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "downcast-rs",
+ "dslab-core",
+ "dyn-clone",
+ "lazy_static",
+ "log 0.4.20",
+ "ordered-float",
+ "rand 0.8.5",
+ "rand_pcg 0.3.1",
+ "regex",
+ "rstest",
+ "serde",
+ "serde_json",
+ "sugars",
+]
+
+[[package]]
 name = "dslab-compute"
 version = "0.1.0"
 dependencies = [
@@ -996,26 +1016,6 @@ dependencies = [
 
 [[package]]
 name = "dslab-mp"
-version = "0.1.0"
-dependencies = [
- "colored",
- "downcast-rs",
- "dslab-core",
- "dyn-clone",
- "lazy_static",
- "log 0.4.20",
- "ordered-float",
- "rand 0.8.5",
- "rand_pcg 0.3.1",
- "regex",
- "rstest",
- "serde",
- "serde_json",
- "sugars",
-]
-
-[[package]]
-name = "dslab-mp-async"
 version = "0.1.0"
 dependencies = [
  "colored",
@@ -2255,6 +2255,21 @@ name = "more-asserts"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
+
+[[package]]
+name = "mp-async-sleep"
+version = "0.1.0"
+dependencies = [
+ "clap 3.2.25",
+ "dslab-async-mp",
+ "env_logger 0.9.3",
+ "log 0.4.20",
+ "rand 0.8.5",
+ "rand_pcg 0.3.1",
+ "serde",
+ "serde_json",
+ "sugars",
+]
 
 [[package]]
 name = "mp-broadcast"

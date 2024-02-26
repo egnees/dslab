@@ -289,6 +289,15 @@ pub enum LogEntry {
         group1: Vec<String>,
         group2: Vec<String>,
     },
+    ProcessSleep {
+        proc_name: String,
+        time: f64,
+        duration: f64,
+    },
+    ProcessWakeUp {
+        proc_name: String,
+        time: f64,
+    },
 }
 
 impl LogEntry {
@@ -458,6 +467,16 @@ impl LogEntry {
             }
             LogEntry::McNetworkPartition { group1, group2 } => {
                 t!(format!("network partition: {:?} -x- {:?}", group1, group2).red());
+            }
+            LogEntry::ProcessSleep {
+                proc_name,
+                time,
+                duration,
+            } => {
+                t!(format!("{:>10.3} {:>10} ZZZ {:>10.3}", time, proc_name, duration).red());
+            }
+            LogEntry::ProcessWakeUp { proc_name, time } => {
+                t!(format!("{:>10.3} {:>10} Wake Up", time, proc_name).green());
             }
         }
     }

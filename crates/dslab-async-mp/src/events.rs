@@ -29,3 +29,26 @@ pub struct TimerFired {
     /// Timer name.
     pub timer: String,
 }
+
+/// Async activity fall asleep.
+#[derive(Clone, Serialize)]
+pub struct SleepStarted {
+    /// Name of process fall asleep.
+    pub proc: String,
+    /// Duration of sleep in seconds.
+    pub duration: f64,
+}
+
+/// Async activity wake up.
+#[derive(Clone, Serialize)]
+pub struct SleepFinished {
+    /// Name of wake up process.
+    pub proc: String,
+}
+
+/// Async activity ended.
+#[derive(Clone, Serialize)]
+pub struct ActivityFinished {
+    /// Process name.
+    pub proc: String,
+}

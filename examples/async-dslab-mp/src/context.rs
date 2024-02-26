@@ -57,8 +57,6 @@ impl VirtualContext {
             .recv_event_by_key::<DataTransferCompleted>(transfer_id as EventKey)
             .await;
 
-        println!("sent message from {} to {}", self.process_id, to);
-
         self.ctx.emit_now(
             NetworkMessageReceived {
                 from: self.process_id,

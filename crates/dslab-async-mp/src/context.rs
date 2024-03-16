@@ -3,6 +3,7 @@
 use std::cell::RefCell;
 use std::future::Future;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use dslab_core::SimulationContext;
 use rand::Rng;
@@ -18,9 +19,9 @@ use crate::node::{ProcessEvent, TimerBehavior};
 pub struct Context {
     proc_name: String,
     clock_skew: f64,
-    rng: Rc<RefCell<Box<dyn RandomProvider>>>,
+    rng: Arc<RefCell<Box<dyn RandomProvider>>>,
     actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
-    sim_ctx: Rc<RefCell<SimulationContext>>,
+    sim_ctx: Arc<RefCell<SimulationContext>>,
 }
 
 trait RandomProvider {
@@ -28,7 +29,7 @@ trait RandomProvider {
 }
 
 struct SimulationRng {
-    sim_ctx: Rc<RefCell<SimulationContext>>,
+    sim_ctx: Arc<RefCell<SimulationContext>>,
 }
 
 impl RandomProvider for SimulationRng {
@@ -48,13 +49,13 @@ impl Context {
     pub fn from_simulation(
         proc_name: String,
         actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
-        sim_ctx: Rc<RefCell<SimulationContext>>,
+        sim_ctx: Arc<RefCell<SimulationContext>>,
         clock_skew: f64,
     ) -> Self {
         Self {
             proc_name,
             clock_skew,
-            rng: Rc::new(RefCell::new(Box::new(SimulationRng {
+            rng: Arc::new(RefCell::new(Box::new(SimulationRng {
                 sim_ctx: sim_ctx.clone(),
             }))),
             actions_holder,

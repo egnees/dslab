@@ -3,11 +3,11 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use colored::*;
 
 use dslab_core::{cast, Event, EventHandler, Id, SimulationContext};
-use serde::Serialize;
 use sugars::{rc, refcell};
 
 use crate::context::Context;
@@ -119,7 +119,7 @@ pub struct Node {
     net: Rc<RefCell<Network>>,
     clock_skew: f64,
     is_crashed: bool,
-    ctx: Rc<RefCell<SimulationContext>>,
+    ctx: Arc<RefCell<SimulationContext>>,
     logger: Rc<RefCell<Logger>>,
     local_message_count: u64,
 }
@@ -138,7 +138,7 @@ impl Node {
             net,
             clock_skew: 0.,
             is_crashed: false,
-            ctx: Rc::new(RefCell::new(ctx)),
+            ctx: Arc::new(RefCell::new(ctx)),
             logger,
             local_message_count: 0,
         }

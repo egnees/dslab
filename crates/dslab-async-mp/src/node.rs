@@ -3,7 +3,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use colored::*;
 
@@ -119,7 +118,7 @@ pub struct Node {
     net: Rc<RefCell<Network>>,
     clock_skew: f64,
     is_crashed: bool,
-    ctx: Arc<RefCell<SimulationContext>>,
+    ctx: Rc<RefCell<SimulationContext>>,
     logger: Rc<RefCell<Logger>>,
     local_message_count: u64,
 }
@@ -138,7 +137,7 @@ impl Node {
             net,
             clock_skew: 0.,
             is_crashed: false,
-            ctx: Arc::new(RefCell::new(ctx)),
+            ctx: Rc::new(RefCell::new(ctx)),
             logger,
             local_message_count: 0,
         }

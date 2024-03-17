@@ -10,7 +10,7 @@ impl Process for ReliableSender {
     fn on_message(&mut self, msg: Message, from: String, ctx: Context) -> Result<(), String> {
         let pair = self.pair.clone();
         ctx.clone().spawn(async move {
-            ctx.send_reliable(msg, pair, 5.0).await.unwrap();
+            ctx.send_reliable(msg, pair).await.unwrap();
         });
 
         Ok(())
@@ -19,7 +19,7 @@ impl Process for ReliableSender {
     fn on_local_message(&mut self, msg: Message, ctx: Context) -> Result<(), String> {
         let pair = self.pair.clone();
         ctx.clone().spawn(async move {
-            ctx.send_reliable(msg, pair, 5.0).await.unwrap();
+            ctx.send_reliable(msg, pair).await.unwrap();
         });
 
         Ok(())

@@ -5,12 +5,13 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
+use dslab_core::async_core::EventKey;
 use dslab_core::handler::EventCancellationPolicy;
 use rand::distributions::uniform::{SampleRange, SampleUniform};
 
 use dslab_core::{cast, Simulation};
 
-use crate::events::MessageReceived;
+use crate::events::{MessageDelivered, MessageReceived};
 use crate::logger::{LogEntry, Logger};
 use crate::message::Message;
 use crate::network::Network;
@@ -32,6 +33,10 @@ impl System {
         let logger = Rc::new(RefCell::new(Logger::new()));
         let mut sim = Simulation::new(seed);
         let net = Rc::new(RefCell::new(Network::new(sim.create_context("net"), logger.clone())));
+
+        // Register key getters.
+        sim.register_key_getter_for::<MessageDelivered>(|e| e.id as EventKey);
+
         Self {
             sim,
             net,

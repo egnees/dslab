@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
+use dslab_core::async_core::EventKey;
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -11,7 +12,7 @@ use dslab_core::event::EventId;
 use dslab_core::Id;
 use dslab_core::SimulationContext;
 
-use crate::events::MessageReceived;
+use crate::events::{MessageDelivered, MessageReceived};
 use crate::logger::*;
 use crate::message::Message;
 
@@ -354,6 +355,55 @@ impl Network {
             self.traffic += msg_size as u64;
         }
         self.message_count += 1;
+    }
+
+    /// Send message between two processes.
+    /// It is guaranteed that message will be delivered exactly once and wont be corrupted.
+    pub(crate) fn send_message_reliable(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
+        let msg_size = msg.size();
+        let src_node = self.proc_locations.get(src).unwrap();
+        let dst_node = self.proc_locations.get(dst).unwrap();
+        let src_node_id = *self.node_ids.get(src_node).unwrap();
+        let dst_node_id = *self.node_ids.get(dst_node).unwrap();
+
+        let msg_id = self.message_count;
+
+        self.log_message_sent(
+            msg_id,
+            src_node.to_string(),
+            src.to_string(),
+            dst_node.to_string(),
+            dst.to_string(),
+            msg.clone(),
+        );
+
+        let e = MessageReceived {
+            id: self.message_count,
+            msg,
+            src: src.to_string(),
+            src_node: src_node.to_string(),
+            dst: dst.to_string(),
+            dst_node: dst_node.to_string(),
+        };
+
+        let ack = MessageDelivered { id: self.message_count };
+        let event_key = ack.id as EventKey;
+
+        // local communication is fast
+        let delay = if src_node == dst_node {
+            0.
+        } else {
+            self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay)
+        };
+
+        self.ctx.emit_as(e, src_node_id, dst_node_id, delay);
+        self.ctx.emit_as(ack, src_node_id, dst_node_id, delay);
+
+        self.message_count += 1;
+        self.network_message_count += 1;
+        self.traffic += msg_size as u64;
+
+        event_key
     }
 
     fn log_message_sent(

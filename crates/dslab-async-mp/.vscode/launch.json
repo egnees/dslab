@@ -1,0 +1,1927 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-async-mp'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-async-mp"
+                ],
+                "filter": {
+                    "name": "dslab-async-mp",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-core'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-core"
+                ],
+                "filter": {
+                    "name": "dslab-core",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'lib'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=lib",
+                    "--package=dslab-core"
+                ],
+                "filter": {
+                    "name": "lib",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-compute'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-compute"
+                ],
+                "filter": {
+                    "name": "dslab-compute",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-models'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-models"
+                ],
+                "filter": {
+                    "name": "dslab-models",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-dag'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-dag"
+                ],
+                "filter": {
+                    "name": "dslab-dag",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=tests",
+                    "--package=dslab-dag"
+                ],
+                "filter": {
+                    "name": "tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-network'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-network"
+                ],
+                "filter": {
+                    "name": "dslab-network",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=tests",
+                    "--package=dslab-network"
+                ],
+                "filter": {
+                    "name": "tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-faas'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "dslab-faas",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_invocation_lifecycle'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_invocation_lifecycle",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "test_invocation_lifecycle",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_stats'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_stats",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "test_stats",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_contention'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_contention",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "test_contention",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_simulation'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_simulation",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "test_simulation",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_sample_metric'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_sample_metric",
+                    "--package=dslab-faas"
+                ],
+                "filter": {
+                    "name": "test_sample_metric",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-iaas'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-iaas"
+                ],
+                "filter": {
+                    "name": "dslab-iaas",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_core'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_core",
+                    "--package=dslab-iaas"
+                ],
+                "filter": {
+                    "name": "test_core",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_algorithms'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_algorithms",
+                    "--package=dslab-iaas"
+                ],
+                "filter": {
+                    "name": "test_algorithms",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-mp'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-mp"
+                ],
+                "filter": {
+                    "name": "dslab-mp",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_mc'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_mc",
+                    "--package=dslab-mp"
+                ],
+                "filter": {
+                    "name": "test_mc",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-mp-python'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-mp-python"
+                ],
+                "filter": {
+                    "name": "dslab-mp-python",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_mc'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_mc",
+                    "--package=dslab-mp-python"
+                ],
+                "filter": {
+                    "name": "test_mc",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dslab-storage'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dslab-storage"
+                ],
+                "filter": {
+                    "name": "dslab-storage",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'async-dslab-mp'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=async-dslab-mp",
+                    "--package=async-dslab-mp"
+                ],
+                "filter": {
+                    "name": "async-dslab-mp",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'async-dslab-mp'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=async-dslab-mp",
+                    "--package=async-dslab-mp"
+                ],
+                "filter": {
+                    "name": "async-dslab-mp",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'async-event-details'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=async-event-details",
+                    "--package=async-event-details"
+                ],
+                "filter": {
+                    "name": "async-event-details",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'async-event-details'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=async-event-details",
+                    "--package=async-event-details"
+                ],
+                "filter": {
+                    "name": "async-event-details",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'launch_tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=launch_tests",
+                    "--package=async-event-details"
+                ],
+                "filter": {
+                    "name": "launch_tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'async-master-workers'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=async-master-workers",
+                    "--package=async-master-workers"
+                ],
+                "filter": {
+                    "name": "async-master-workers",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'async-master-workers'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=async-master-workers",
+                    "--package=async-master-workers"
+                ],
+                "filter": {
+                    "name": "async-master-workers",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'launch_tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=launch_tests",
+                    "--package=async-master-workers"
+                ],
+                "filter": {
+                    "name": "launch_tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'async-ping-pong'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=async-ping-pong",
+                    "--package=async-ping-pong"
+                ],
+                "filter": {
+                    "name": "async-ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'async-ping-pong'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=async-ping-pong",
+                    "--package=async-ping-pong"
+                ],
+                "filter": {
+                    "name": "async-ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'launch_tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=launch_tests",
+                    "--package=async-ping-pong"
+                ],
+                "filter": {
+                    "name": "launch_tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'compute-multicore-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=compute-multicore-example",
+                    "--package=compute-multicore-example"
+                ],
+                "filter": {
+                    "name": "compute-multicore-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'compute-multicore-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=compute-multicore-example",
+                    "--package=compute-multicore-example"
+                ],
+                "filter": {
+                    "name": "compute-multicore-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'compute-singlecore-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=compute-singlecore-example",
+                    "--package=compute-singlecore-example"
+                ],
+                "filter": {
+                    "name": "compute-singlecore-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'compute-singlecore-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=compute-singlecore-example",
+                    "--package=compute-singlecore-example"
+                ],
+                "filter": {
+                    "name": "compute-singlecore-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dag-benchmark'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dag-benchmark",
+                    "--package=dag-benchmark"
+                ],
+                "filter": {
+                    "name": "dag-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'dag-benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=dag-benchmark",
+                    "--package=dag-benchmark"
+                ],
+                "filter": {
+                    "name": "dag-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dag-demo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dag-demo",
+                    "--package=dag-demo"
+                ],
+                "filter": {
+                    "name": "dag-demo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'dag-demo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=dag-demo",
+                    "--package=dag-demo"
+                ],
+                "filter": {
+                    "name": "dag-demo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dag-portfolio'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dag-portfolio",
+                    "--package=dag-portfolio"
+                ],
+                "filter": {
+                    "name": "dag-portfolio",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'dag-portfolio'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=dag-portfolio",
+                    "--package=dag-portfolio"
+                ],
+                "filter": {
+                    "name": "dag-portfolio",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'faas-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=faas-example",
+                    "--package=faas-example"
+                ],
+                "filter": {
+                    "name": "faas-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'faas-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=faas-example",
+                    "--package=faas-example"
+                ],
+                "filter": {
+                    "name": "faas-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'faas-benchmark'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=faas-benchmark",
+                    "--package=faas-benchmark"
+                ],
+                "filter": {
+                    "name": "faas-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'faas-benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=faas-benchmark",
+                    "--package=faas-benchmark"
+                ],
+                "filter": {
+                    "name": "faas-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'faas-parallel-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=faas-parallel-example",
+                    "--package=faas-parallel-example"
+                ],
+                "filter": {
+                    "name": "faas-parallel-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'faas-parallel-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=faas-parallel-example",
+                    "--package=faas-parallel-example"
+                ],
+                "filter": {
+                    "name": "faas-parallel-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'faas-scheduling-experiment'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=faas-scheduling-experiment",
+                    "--package=faas-scheduling-experiment"
+                ],
+                "filter": {
+                    "name": "faas-scheduling-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'faas-scheduling-experiment'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=faas-scheduling-experiment",
+                    "--package=faas-scheduling-experiment"
+                ],
+                "filter": {
+                    "name": "faas-scheduling-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'iaas-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=iaas-example",
+                    "--package=iaas-example"
+                ],
+                "filter": {
+                    "name": "iaas-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'iaas-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=iaas-example",
+                    "--package=iaas-example"
+                ],
+                "filter": {
+                    "name": "iaas-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'iaas-benchmark'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=iaas-benchmark",
+                    "--package=iaas-benchmark"
+                ],
+                "filter": {
+                    "name": "iaas-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'iaas-benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=iaas-benchmark",
+                    "--package=iaas-benchmark"
+                ],
+                "filter": {
+                    "name": "iaas-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'iaas-experiment'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=iaas-experiment",
+                    "--package=iaas-experiment"
+                ],
+                "filter": {
+                    "name": "iaas-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'iaas-experiment'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=iaas-experiment",
+                    "--package=iaas-experiment"
+                ],
+                "filter": {
+                    "name": "iaas-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'iaas-traces'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=iaas-traces",
+                    "--package=iaas-traces"
+                ],
+                "filter": {
+                    "name": "iaas-traces",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'iaas-traces'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=iaas-traces",
+                    "--package=iaas-traces"
+                ],
+                "filter": {
+                    "name": "iaas-traces",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'master-workers'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=master-workers",
+                    "--package=master-workers"
+                ],
+                "filter": {
+                    "name": "master-workers",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'master-workers'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=master-workers",
+                    "--package=master-workers"
+                ],
+                "filter": {
+                    "name": "master-workers",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'launch_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=launch_test",
+                    "--package=master-workers"
+                ],
+                "filter": {
+                    "name": "launch_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-async-sleep'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-async-sleep",
+                    "--package=mp-async-sleep"
+                ],
+                "filter": {
+                    "name": "mp-async-sleep",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-async-sleep'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-async-sleep",
+                    "--package=mp-async-sleep"
+                ],
+                "filter": {
+                    "name": "mp-async-sleep",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-broadcast'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-broadcast",
+                    "--package=mp-broadcast"
+                ],
+                "filter": {
+                    "name": "mp-broadcast",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-broadcast'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-broadcast",
+                    "--package=mp-broadcast"
+                ],
+                "filter": {
+                    "name": "mp-broadcast",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-guarantees'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-guarantees",
+                    "--package=mp-guarantees"
+                ],
+                "filter": {
+                    "name": "mp-guarantees",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-guarantees'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-guarantees",
+                    "--package=mp-guarantees"
+                ],
+                "filter": {
+                    "name": "mp-guarantees",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-kv-replication'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-kv-replication",
+                    "--package=mp-kv-replication"
+                ],
+                "filter": {
+                    "name": "mp-kv-replication",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-kv-replication'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-kv-replication",
+                    "--package=mp-kv-replication"
+                ],
+                "filter": {
+                    "name": "mp-kv-replication",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-kv-replication-v2'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-kv-replication-v2",
+                    "--package=mp-kv-replication-v2"
+                ],
+                "filter": {
+                    "name": "mp-kv-replication-v2",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-kv-replication-v2'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-kv-replication-v2",
+                    "--package=mp-kv-replication-v2"
+                ],
+                "filter": {
+                    "name": "mp-kv-replication-v2",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-kv-sharding'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-kv-sharding",
+                    "--package=mp-kv-sharding"
+                ],
+                "filter": {
+                    "name": "mp-kv-sharding",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-kv-sharding'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-kv-sharding",
+                    "--package=mp-kv-sharding"
+                ],
+                "filter": {
+                    "name": "mp-kv-sharding",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-membership'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-membership",
+                    "--package=mp-membership"
+                ],
+                "filter": {
+                    "name": "mp-membership",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-membership'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-membership",
+                    "--package=mp-membership"
+                ],
+                "filter": {
+                    "name": "mp-membership",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mp-ping-pong'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mp-ping-pong",
+                    "--package=mp-ping-pong"
+                ],
+                "filter": {
+                    "name": "mp-ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mp-ping-pong'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mp-ping-pong",
+                    "--package=mp-ping-pong"
+                ],
+                "filter": {
+                    "name": "mp-ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'network-simple'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=network-simple",
+                    "--package=network-simple"
+                ],
+                "filter": {
+                    "name": "network-simple",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'network-simple'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=network-simple",
+                    "--package=network-simple"
+                ],
+                "filter": {
+                    "name": "network-simple",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'network-topology-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=network-topology-example",
+                    "--package=network-topology-example"
+                ],
+                "filter": {
+                    "name": "network-topology-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'network-topology-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=network-topology-example",
+                    "--package=network-topology-example"
+                ],
+                "filter": {
+                    "name": "network-topology-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'network-topology-benchmark'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=network-topology-benchmark",
+                    "--package=network-topology-benchmark"
+                ],
+                "filter": {
+                    "name": "network-topology-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'network-topology-benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=network-topology-benchmark",
+                    "--package=network-topology-benchmark"
+                ],
+                "filter": {
+                    "name": "network-topology-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'ping-pong'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ping-pong",
+                    "--package=ping-pong"
+                ],
+                "filter": {
+                    "name": "ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'ping-pong'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=ping-pong",
+                    "--package=ping-pong"
+                ],
+                "filter": {
+                    "name": "ping-pong",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'serverless-in-the-wild'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=serverless-in-the-wild",
+                    "--package=serverless-in-the-wild"
+                ],
+                "filter": {
+                    "name": "serverless-in-the-wild",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'serverless-in-the-wild'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=serverless-in-the-wild",
+                    "--package=serverless-in-the-wild"
+                ],
+                "filter": {
+                    "name": "serverless-in-the-wild",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'storage-disk-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=storage-disk-example",
+                    "--package=storage-disk-example"
+                ],
+                "filter": {
+                    "name": "storage-disk-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'storage-disk-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=storage-disk-example",
+                    "--package=storage-disk-example"
+                ],
+                "filter": {
+                    "name": "storage-disk-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'storage-disk-advanced-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=storage-disk-advanced-example",
+                    "--package=storage-disk-advanced-example"
+                ],
+                "filter": {
+                    "name": "storage-disk-advanced-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'storage-disk-advanced-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=storage-disk-advanced-example",
+                    "--package=storage-disk-advanced-example"
+                ],
+                "filter": {
+                    "name": "storage-disk-advanced-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'storage-disk-benchmark'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=storage-disk-benchmark",
+                    "--package=storage-disk-benchmark"
+                ],
+                "filter": {
+                    "name": "storage-disk-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'storage-disk-benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=storage-disk-benchmark",
+                    "--package=storage-disk-benchmark"
+                ],
+                "filter": {
+                    "name": "storage-disk-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'storage-fs-example'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=storage-fs-example",
+                    "--package=storage-fs-example"
+                ],
+                "filter": {
+                    "name": "storage-fs-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'storage-fs-example'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=storage-fs-example",
+                    "--package=storage-fs-example"
+                ],
+                "filter": {
+                    "name": "storage-fs-example",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'throughput-model-comparison'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=throughput-model-comparison",
+                    "--package=throughput-model-comparison"
+                ],
+                "filter": {
+                    "name": "throughput-model-comparison",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'throughput-model-comparison'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=throughput-model-comparison",
+                    "--package=throughput-model-comparison"
+                ],
+                "filter": {
+                    "name": "throughput-model-comparison",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dag-draw'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dag-draw",
+                    "--package=dag-draw"
+                ],
+                "filter": {
+                    "name": "dag-draw",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'dag-draw'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=dag-draw",
+                    "--package=dag-draw"
+                ],
+                "filter": {
+                    "name": "dag-draw",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dag-run-experiment'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dag-run-experiment",
+                    "--package=dag-run-experiment"
+                ],
+                "filter": {
+                    "name": "dag-run-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'dag-run-experiment'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=dag-run-experiment",
+                    "--package=dag-run-experiment"
+                ],
+                "filter": {
+                    "name": "dag-run-experiment",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

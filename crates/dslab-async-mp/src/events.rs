@@ -52,3 +52,11 @@ pub struct ActivityFinished {
     /// Process name.
     pub proc: String,
 }
+
+/// Previously sent message is delivered.
+/// Event is returned to the process who waits for sent message.
+#[derive(Clone, Serialize)]
+pub struct MessageDelivered {
+    /// Message identifier.
+    pub id: u64,
+}

@@ -8,8 +8,9 @@ use dslab_core::SimulationContext;
 use rand::Rng;
 use rand_pcg::Pcg64;
 
-use crate::events::{ActivityFinished, SleepFinished, SleepStarted};
+use crate::events::{ActivityFinished, MessageDelivered, SleepFinished, SleepStarted};
 use crate::message::Message;
+use crate::network::Network;
 use crate::node::{ProcessEvent, TimerBehavior};
 
 /// Proxy for interaction of a process with the system.
@@ -21,6 +22,7 @@ pub struct Context {
     rng: Rc<RefCell<Box<dyn RandomProvider>>>,
     actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
     sim_ctx: Rc<RefCell<SimulationContext>>,
+    net: Rc<RefCell<Network>>,
 }
 
 trait RandomProvider {
@@ -49,6 +51,7 @@ impl Context {
         proc_name: String,
         actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
         sim_ctx: Rc<RefCell<SimulationContext>>,
+        net: Rc<RefCell<Network>>,
         clock_skew: f64,
     ) -> Self {
         Self {
@@ -59,6 +62,7 @@ impl Context {
             }))),
             actions_holder,
             sim_ctx,
+            net,
         }
     }
 
@@ -82,7 +86,38 @@ impl Context {
             msg,
             src: self.proc_name.clone(),
             dst,
+            reliable: false,
         });
+    }
+
+    /// Sends a message to a process reliable.
+    /// It is guaranteed that message will be delivered exactly once and without corruption.
+    ///
+    /// # Returns
+    ///
+    /// - Error if message was not delivered in specified timeout.
+    /// - Ok if message was delivered
+    pub async fn send_reliable(&self, msg: Message, dst: String, _timeout: f64) -> Result<(), String> {
+        assert!(
+            msg.tip.len() <= 50,
+            "Message type length exceeds the limit of 50 characters"
+        );
+
+        self.actions_holder.borrow_mut().push(ProcessEvent::MessageSent {
+            msg: msg.clone(),
+            src: self.proc_name.clone(),
+            dst: dst.clone(),
+            reliable: true,
+        });
+
+        let event_key = self.net.borrow_mut().send_message_reliable(msg, &self.proc_name, &dst);
+
+        self.sim_ctx
+            .borrow()
+            .recv_event_by_key::<MessageDelivered>(event_key)
+            .await;
+
+        Ok(())
     }
 
     /// Sends a local message.

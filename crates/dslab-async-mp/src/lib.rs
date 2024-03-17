@@ -11,3 +11,6 @@ pub mod process;
 pub mod system;
 pub mod test;
 mod util;
+
+#[cfg(test)]
+mod tests;

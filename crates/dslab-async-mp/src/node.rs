@@ -10,7 +10,7 @@ use dslab_core::{cast, Event, EventHandler, Id, SimulationContext};
 use sugars::{rc, refcell};
 
 use crate::context::Context;
-use crate::events::{ActivityFinished, MessageReceived, SleepFinished, SleepStarted, TimerFired};
+use crate::events::{ActivityFinished, MessageDelivered, MessageReceived, SleepFinished, SleepStarted, TimerFired};
 use crate::logger::{LogEntry, Logger};
 use crate::message::Message;
 use crate::network::Network;
@@ -48,6 +48,7 @@ pub enum ProcessEvent {
         msg: Message,
         src: String,
         dst: String,
+        reliable: bool,
     },
     MessageReceived {
         msg: Message,
@@ -263,7 +264,13 @@ impl Node {
             ProcessEvent::LocalMessageReceived { msg: msg.clone() },
         ));
         let actions_holder = proc_entry.pending_actions.clone();
-        let proc_ctx = Context::from_simulation(proc.clone(), actions_holder, self.ctx.clone(), self.clock_skew);
+        let proc_ctx = Context::from_simulation(
+            proc.clone(),
+            actions_holder,
+            self.ctx.clone(),
+            self.net.clone(),
+            self.clock_skew,
+        );
 
         let cb_result = proc_entry.proc_impl.on_local_message(msg, proc_ctx);
 
@@ -302,6 +309,7 @@ impl Node {
             proc.clone(),
             proc_entry.pending_actions.clone(),
             self.ctx.clone(),
+            self.net.clone(),
             self.clock_skew,
         );
 
@@ -337,6 +345,7 @@ impl Node {
             proc.clone(),
             proc_entry.pending_actions.clone(),
             self.ctx.clone(),
+            self.net.clone(),
             self.clock_skew,
         );
 
@@ -394,8 +403,15 @@ impl Node {
             let proc_entry = self.processes.get_mut(&proc).unwrap();
             proc_entry.event_log.push(EventLogEntry::new(time, action.clone()));
             match action {
-                ProcessEvent::MessageSent { msg, src: _, dst } => {
-                    self.net.borrow_mut().send_message(msg, &proc, &dst);
+                ProcessEvent::MessageSent {
+                    msg,
+                    src: _,
+                    dst,
+                    reliable,
+                } => {
+                    if !reliable {
+                        self.net.borrow_mut().send_message(msg, &proc, &dst);
+                    } // reliable message sent actions and done by process.
                     proc_entry.sent_message_count += 1;
                 }
                 ProcessEvent::LocalMessageSent { msg } => {
@@ -519,6 +535,7 @@ impl EventHandler for Node {
             ActivityFinished { proc } => {
                 self.on_async_finished(proc);
             }
+            MessageDelivered { id: _ } => {}
         })
     }
 }

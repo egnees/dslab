@@ -8,7 +8,7 @@ use dslab_core::SimulationContext;
 use rand::Rng;
 use rand_pcg::Pcg64;
 
-use crate::events::{ActivityFinished, MessageDelivered, SleepFinished, SleepStarted};
+use crate::events::{ActivityFinished, MessageAck, SleepFinished, SleepStarted};
 use crate::message::Message;
 use crate::network::Network;
 use crate::node::{ProcessEvent, TimerBehavior};
@@ -112,10 +112,7 @@ impl Context {
 
         let event_key = self.net.borrow_mut().send_message_reliable(msg, &self.proc_name, &dst);
 
-        self.sim_ctx
-            .borrow()
-            .recv_event_by_key::<MessageDelivered>(event_key)
-            .await;
+        self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).await;
 
         Ok(())
     }

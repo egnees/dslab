@@ -11,7 +11,7 @@ use rand::distributions::uniform::{SampleRange, SampleUniform};
 
 use dslab_core::{cast, Simulation};
 
-use crate::events::{MessageDelivered, MessageReceived};
+use crate::events::{MessageAck, MessageReceived};
 use crate::logger::{LogEntry, Logger};
 use crate::message::Message;
 use crate::network::Network;
@@ -35,7 +35,7 @@ impl System {
         let net = Rc::new(RefCell::new(Network::new(sim.create_context("net"), logger.clone())));
 
         // Register key getters.
-        sim.register_key_getter_for::<MessageDelivered>(|e| e.id as EventKey);
+        sim.register_key_getter_for::<MessageAck>(|e| e.id as EventKey);
 
         Self {
             sim,

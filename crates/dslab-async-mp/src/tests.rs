@@ -1,17 +1,15 @@
+use std::{borrow::BorrowMut, str::FromStr};
+
 use crate::{context::Context, message::Message, process::Process, system::System};
 
 #[derive(Clone)]
 struct ReliableSender {
-    name: String,
     pair: String,
 }
 
 impl Process for ReliableSender {
-    fn on_message(&mut self, msg: Message, from: String, ctx: Context) -> Result<(), String> {
-        let pair = self.pair.clone();
-        ctx.clone().spawn(async move {
-            ctx.send_reliable(msg, pair).await.unwrap();
-        });
+    fn on_message(&mut self, _: Message, _: String, ctx: Context) -> Result<(), String> {
+        ctx.clone().send_local(Message::new("", "got message".into()));
 
         Ok(())
     }
@@ -19,14 +17,14 @@ impl Process for ReliableSender {
     fn on_local_message(&mut self, msg: Message, ctx: Context) -> Result<(), String> {
         let pair = self.pair.clone();
         ctx.clone().spawn(async move {
-            ctx.send_reliable(msg, pair).await.unwrap();
+            _ = ctx.send_reliable(msg, pair).await;
         });
 
         Ok(())
     }
 
-    fn on_timer(&mut self, _timer: String, _ctx: Context) -> Result<(), String> {
-        todo!()
+    fn on_timer(&mut self, _: String, _: Context) -> Result<(), String> {
+        panic!("no timers should be")
     }
 }
 
@@ -34,15 +32,9 @@ impl Process for ReliableSender {
 fn reliable_works() {
     let mut system = System::new(12345);
 
-    let sender1 = ReliableSender {
-        name: "s1".to_owned(),
-        pair: "s2".to_owned(),
-    };
+    let sender1 = ReliableSender { pair: "s2".to_owned() };
 
-    let sender2 = ReliableSender {
-        name: "s2".to_owned(),
-        pair: "s1".to_owned(),
-    };
+    let sender2 = ReliableSender { pair: "s1".to_owned() };
 
     system.add_node("1");
     system.add_node("2");
@@ -91,6 +83,27 @@ fn reliable_works() {
 
     system.step_for_duration(50.);
 
-    assert!(system.sent_message_count("s1") > 0);
-    assert!(system.sent_message_count("s2") > 0);
+    assert!(!system.read_local_messages("s1").is_empty());
+    assert!(!system.read_local_messages("s2").is_empty());
+
+    system.network().make_partition(&["s1"], &["s2"]);
+
+    system.send_local_message(
+        "s1",
+        Message {
+            tip: "M".to_owned(),
+            data: "Echo".to_owned(),
+        },
+    );
+
+    system.send_local_message(
+        "s2",
+        Message {
+            tip: "M".to_owned(),
+            data: "s2 hello".to_owned(),
+        },
+    );
+
+    assert!(system.read_local_messages("s2").is_empty());
+    assert!(system.read_local_messages("s2").is_empty());
 }

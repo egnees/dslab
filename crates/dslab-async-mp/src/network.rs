@@ -12,7 +12,7 @@ use dslab_core::event::EventId;
 use dslab_core::Id;
 use dslab_core::SimulationContext;
 
-use crate::events::{MessageDelivered, MessageReceived};
+use crate::events::{MessageAck, MessageReceived};
 use crate::logger::*;
 use crate::message::Message;
 
@@ -357,8 +357,9 @@ impl Network {
         self.message_count += 1;
     }
 
-    /// Send message between two processes.
+    /// Reliable send message between two processes.
     /// It is guaranteed that message will be delivered exactly once and wont be corrupted.
+    /// If two processes are not connected by the network, then error will be returned.
     pub(crate) fn send_message_reliable(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
         let msg_size = msg.size();
         let src_node = self.proc_locations.get(src).unwrap();
@@ -377,16 +378,16 @@ impl Network {
             msg.clone(),
         );
 
-        let e = MessageReceived {
-            id: self.message_count,
-            msg,
-            src: src.to_string(),
-            src_node: src_node.to_string(),
-            dst: dst.to_string(),
-            dst_node: dst_node.to_string(),
-        };
+        self.message_count += 1;
 
-        let ack = MessageDelivered { id: self.message_count };
+        let msg_dropped = self.drop_outgoing.contains(src)
+            || self.drop_incoming.contains(dst)
+            || self.disabled_links.contains(&(src_node.clone(), dst_node.clone()));
+
+        let ack = MessageAck {
+            id: msg_id,
+            delivered: !msg_dropped,
+        };
         let event_key = ack.id as EventKey;
 
         // local communication is fast
@@ -396,10 +397,21 @@ impl Network {
             self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay)
         };
 
-        self.ctx.emit_as(e, src_node_id, dst_node_id, delay);
+        if !msg_dropped {
+            let e = MessageReceived {
+                id: msg_id,
+                msg,
+                src: src.to_string(),
+                src_node: src_node.to_string(),
+                dst: dst.to_string(),
+                dst_node: dst_node.to_string(),
+            };
+
+            self.ctx.emit_as(e, src_node_id, dst_node_id, delay);
+        }
+
         self.ctx.emit_as(ack, src_node_id, dst_node_id, delay);
 
-        self.message_count += 1;
         self.network_message_count += 1;
         self.traffic += msg_size as u64;
 

@@ -53,10 +53,12 @@ pub struct ActivityFinished {
     pub proc: String,
 }
 
-/// Previously sent message is delivered.
-/// Event is returned to the process who waits for sent message.
+/// Previously sent message is delivered or else.
+/// Event is returned to the process who waits for the ack on sent message.
 #[derive(Clone, Serialize)]
-pub struct MessageDelivered {
+pub struct MessageAck {
     /// Message identifier.
     pub id: u64,
+    /// If messages was delivered on not.
+    pub delivered: bool,
 }

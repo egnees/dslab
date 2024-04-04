@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::future::Future;
 use std::rc::Rc;
 
+use dslab_core::async_core::AwaitResult;
 use dslab_core::SimulationContext;
 use rand::Rng;
 use rand_pcg::Pcg64;
@@ -115,6 +116,48 @@ impl Context {
         self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).await;
 
         Ok(())
+    }
+
+    /// Sends a message to a process reliable.
+    /// If message will not be delivered in specified timeout, error will be returned.
+    /// It is guaranteed that message will be delivered exactly once and without corruption.
+    ///
+    /// # Returns
+    ///
+    /// - Error if message was not delivered in specified timeout.
+    /// - Ok if message was delivered
+    pub async fn send_reliable_timeout(&mut self, msg: Message, dst: String, timeout: f64) -> Result<(), String> {
+        assert!(
+            msg.tip.len() <= 50,
+            "Message type length exceeds the limit of 50 characters"
+        );
+
+        self.actions_holder.borrow_mut().push(ProcessEvent::MessageSent {
+            msg: msg.clone(),
+            src: self.proc_name.clone(),
+            dst: dst.clone(),
+            reliable: true,
+        });
+
+        let event_key = self.net.borrow_mut().send_message_reliable(msg, &self.proc_name, &dst);
+
+        let send_result = self
+            .sim_ctx
+            .borrow()
+            .recv_event_by_key::<MessageAck>(event_key)
+            .with_timeout(timeout)
+            .await;
+
+        match send_result {
+            AwaitResult::Timeout(_) => Err("timeout".into()),
+            AwaitResult::Ok((_, ack)) => {
+                if ack.delivered {
+                    Ok(())
+                } else {
+                    Err("message not delivered".into())
+                }
+            }
+        }
     }
 
     /// Sends a local message.

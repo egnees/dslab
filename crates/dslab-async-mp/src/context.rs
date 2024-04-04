@@ -126,7 +126,7 @@ impl Context {
     ///
     /// - Error if message was not delivered in specified timeout.
     /// - Ok if message was delivered
-    pub async fn send_reliable_timeout(&mut self, msg: Message, dst: String, timeout: f64) -> Result<(), String> {
+    pub async fn send_reliable_timeout(&self, msg: Message, dst: String, timeout: f64) -> Result<(), String> {
         assert!(
             msg.tip.len() <= 50,
             "Message type length exceeds the limit of 50 characters"

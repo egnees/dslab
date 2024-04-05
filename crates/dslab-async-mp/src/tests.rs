@@ -6,8 +6,8 @@ struct ReliableSender {
 }
 
 impl Process for ReliableSender {
-    fn on_message(&mut self, _: Message, _: String, ctx: Context) -> Result<(), String> {
-        ctx.clone().send_local(Message::new("", "got message".into()));
+    fn on_message(&mut self, msg: Message, _: String, ctx: Context) -> Result<(), String> {
+        ctx.clone().send_local(msg);
 
         Ok(())
     }
@@ -43,9 +43,9 @@ fn reliable_works() {
     system.network().connect_node("1");
     system.network().connect_node("2");
 
-    system.network().set_corrupt_rate(0.8);
     system.network().set_delays(0.5, 10.);
     system.network().set_corrupt_rate(0.5);
+    system.network().set_drop_rate(0.9999);
 
     system.send_local_message(
         "s1",
@@ -104,4 +104,46 @@ fn reliable_works() {
 
     assert!(system.read_local_messages("s2").is_empty());
     assert!(system.read_local_messages("s2").is_empty());
+}
+
+#[test]
+fn reliable_no_reorder() {
+    let mut system = System::new(12345);
+
+    let sender1 = ReliableSender { pair: "s2".to_owned() };
+
+    let sender2 = ReliableSender { pair: "s1".to_owned() };
+
+    system.add_node("1");
+    system.add_node("2");
+
+    system.add_process("s1", Box::new(sender1), "1");
+    system.add_process("s2", Box::new(sender2), "2");
+
+    system.network().connect_node("1");
+    system.network().connect_node("2");
+
+    system.network().set_delays(0.5, 10.);
+    system.network().set_corrupt_rate(0.5);
+    system.network().set_drop_rate(0.9999);
+
+    for i in 0..100 {
+        system.send_local_message(
+            "s1",
+            Message {
+                tip: "M".to_owned(),
+                data: format!("{}", i),
+            },
+        );
+
+        // Send network message to s2.
+        system.steps(1);
+    }
+
+    system.step_until_no_events();
+    let messages = system.read_local_messages("s2");
+
+    for (i, msg) in messages.iter().enumerate() {
+        assert_eq!(msg.data, format!("{}", i));
+    }
 }

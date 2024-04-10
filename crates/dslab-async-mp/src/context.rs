@@ -111,7 +111,7 @@ impl Context {
             reliable: true,
         });
 
-        let event_key = self.net.borrow_mut().send_message_reliable(msg, &self.proc_name, &dst);
+        let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
         self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).await;
 
@@ -139,7 +139,7 @@ impl Context {
             reliable: true,
         });
 
-        let event_key = self.net.borrow_mut().send_message_reliable(msg, &self.proc_name, &dst);
+        let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
         let send_result = self
             .sim_ctx

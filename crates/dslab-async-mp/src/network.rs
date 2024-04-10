@@ -360,7 +360,7 @@ impl Network {
     /// Reliable send message between two processes.
     /// It is guaranteed that message will be delivered exactly once and wont be corrupted.
     /// If two processes are not connected by the network, then error will be returned.
-    pub(crate) fn send_message_reliable(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
+    pub(crate) fn send_with_ack(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
         let msg_size = msg.size();
         let src_node = self.proc_locations.get(src).unwrap();
         let dst_node = self.proc_locations.get(dst).unwrap();

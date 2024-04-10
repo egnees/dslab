@@ -28,30 +28,11 @@ pub struct Network {
     drop_incoming: HashSet<String>,
     drop_outgoing: HashSet<String>,
     disabled_links: HashSet<(String, String)>,
-    streams: HashMap<(Id, Id), Stream>,
     network_message_count: u64,
     message_count: u64,
     traffic: u64,
     ctx: SimulationContext,
     logger: Rc<RefCell<Logger>>,
-}
-
-/// Represents tcp-stream between two nodes.
-struct Stream {
-    /// Corresponds to the time of last send request.
-    pub last_event_time: f64,
-}
-
-impl Stream {
-    pub fn new(create_time: f64) -> Self {
-        Self {
-            last_event_time: create_time,
-        }
-    }
-
-    pub fn next_event(&mut self, time: f64) {
-        self.last_event_time = time;
-    }
 }
 
 impl Network {
@@ -67,7 +48,6 @@ impl Network {
             drop_incoming: HashSet::new(),
             drop_outgoing: HashSet::new(),
             disabled_links: HashSet::new(),
-            streams: HashMap::new(),
             network_message_count: 0,
             message_count: 0,
             traffic: 0,
@@ -424,25 +404,10 @@ impl Network {
                 dst_node: dst_node.to_string(),
             };
 
-            let msg_delay = if src_node_id == src_node_id {
+            let msg_delay = if src_node_id == dst_node_id {
                 0.
             } else {
-                let mut cur_time = self.ctx.time();
-                if !self.streams.contains_key(&(src_node_id, dst_node_id)) {
-                    // Handshake
-                    let handshake_delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
-                    cur_time += handshake_delay;
-
-                    self.streams.insert((src_node_id, dst_node_id), Stream::new(cur_time));
-                }
-
-                let stream = self.streams.get_mut(&(src_node_id, dst_node_id)).unwrap();
-                let msg_delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
-                let next_event_time = stream.last_event_time + msg_delay;
-
-                stream.next_event(next_event_time);
-
-                next_event_time - self.ctx.time()
+                self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay)
             };
 
             self.ctx.emit_as(e, src_node_id, dst_node_id, msg_delay);

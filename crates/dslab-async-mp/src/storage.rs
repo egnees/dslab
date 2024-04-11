@@ -1,11 +1,15 @@
 //! Definition of filesystem.
 
-use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use dslab_core::{Id, Simulation, SimulationContext};
-use dslab_storage::disk::{self, DiskBuilder};
-use dslab_storage::events::{FileReadCompleted, FileReadFailed};
+use dslab_core::SimulationContext;
 pub use dslab_storage::{disk::Disk, fs::FileSystem};
+use dslab_storage::{
+    events::{DataReadCompleted, DataReadFailed, DataWriteCompleted, DataWriteFailed},
+    storage::Storage as StorageModel,
+};
+
+use futures::{select, FutureExt};
 
 /// Represents error during reading.
 pub enum ReadError {
@@ -30,16 +34,16 @@ pub enum CreateFileError {
 
 /// Represents filesystem mounted on the single disk.
 pub struct Storage {
-    fs: Rc<RefCell<FileSystem>>,
+    model: Rc<RefCell<dyn StorageModel>>,
     files_content: HashMap<String, Vec<u8>>,
     ctx: SimulationContext,
 }
 
 impl Storage {
     /// Creates a new storage.
-    pub fn new(fs: Rc<RefCell<FileSystem>>, ctx: SimulationContext) -> Self {
+    pub fn new(disk: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext) -> Self {
         Self {
-            fs,
+            model: disk,
             files_content: HashMap::new(),
             ctx,
         }
@@ -49,7 +53,7 @@ impl Storage {
     /// If file with such name already exists,
     /// [`CreateFileError::FileAlreadyExists`] will be returned.
     pub async fn create_file(&mut self, name: &str) -> Result<(), CreateFileError> {
-        if let Err(_) = self.fs.borrow_mut().create_file(name) {
+        if self.files_content.contains_key(name) {
             Err(CreateFileError::FileAlreadyExists())
         } else {
             let exists = self.files_content.insert(name.into(), Vec::new()).is_some();
@@ -63,20 +67,36 @@ impl Storage {
         if !self.files_content.contains_key(name) {
             return Err(ReadError::FileNotFound());
         }
-        let key = self.fs.borrow_mut().read_all(name, self.ctx.id());
-        self.ctx.recv_event_by_key::<FileReadCompleted>(key).await;
-        return Ok(self.files_content.get(name).unwrap().clone());
+
+        let content = self.files_content.get(name).unwrap();
+
+        let key = self.model.borrow_mut().read(content.len() as u64, self.ctx.id());
+        select! {
+            _ = self.ctx.recv_event_by_key::<DataReadCompleted>(key).fuse() => {
+                Ok(content.clone())
+            }
+            _ = self.ctx.recv_event_by_key::<DataReadFailed>(key).fuse() => {
+                panic!("can not read stored data from disk")
+            }
+        }
     }
 
     /// Append to file.
     pub async fn append(&mut self, name: &str, data: &[u8]) -> Result<(), WriteError> {
-        let key = self
-            .fs
-            .borrow_mut()
-            .write(name, data.len().try_into().unwrap(), self.ctx.id());
+        if !self.files_content.contains_key(name) {
+            return Err(WriteError::FileNotFound());
+        }
 
-        todo!()
+        let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
+        select! {
+            _ = self.ctx.recv_event_by_key::<DataWriteCompleted>(key).fuse() => {
+                let content = self.files_content.get_mut(name).unwrap();
+                content.extend_from_slice(data);
+                Ok(())
+            }
+            _ = self.ctx.recv_event_by_key::<DataWriteFailed>(key).fuse() => {
+                Err(WriteError::OutOfMemory())
+            }
+        }
     }
-
-    pub fn load_from_dir() {}
 }

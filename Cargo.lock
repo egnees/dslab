@@ -167,7 +167,7 @@ dependencies = [
  "dslab-storage",
  "env_logger 0.9.3",
  "futures",
- "log 0.4.20",
+ "log 0.4.21",
  "priority-queue",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -185,7 +185,7 @@ dependencies = [
  "dslab-core",
  "env_logger 0.9.3",
  "futures",
- "log 0.4.20",
+ "log 0.4.21",
  "priority-queue",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -205,7 +205,7 @@ dependencies = [
  "dslab-storage",
  "env_logger 0.9.3",
  "futures",
- "log 0.4.20",
+ "log 0.4.21",
  "priority-queue",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -222,7 +222,7 @@ dependencies = [
  "dslab-network",
  "env_logger 0.9.3",
  "futures",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -561,7 +561,7 @@ dependencies = [
  "dslab-compute",
  "dslab-core",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -573,7 +573,7 @@ dependencies = [
  "dslab-compute",
  "dslab-core",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -584,7 +584,7 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e89f72f65e8501878b8a004d5a1afb780987e2ce2b4532c562e367a72c57499f"
 dependencies = [
- "log 0.4.20",
+ "log 0.4.21",
  "web-sys",
 ]
 
@@ -738,7 +738,7 @@ dependencies = [
  "dslab-compute",
  "dslab-dag",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "reqwest",
@@ -839,7 +839,7 @@ dependencies = [
  "fluent-syntax",
  "fnv",
  "instant",
- "log 0.4.20",
+ "log 0.4.21",
  "simple_logger",
  "unic-langid",
  "unicode-segmentation",
@@ -884,7 +884,7 @@ dependencies = [
  "keyboard-types",
  "kurbo",
  "lazy_static",
- "log 0.4.20",
+ "log 0.4.21",
  "objc",
  "piet-common",
  "scopeguard",
@@ -902,9 +902,11 @@ dependencies = [
  "colored",
  "downcast-rs",
  "dslab-core",
+ "dslab-storage",
  "dyn-clone",
+ "env_logger 0.11.3",
  "lazy_static",
- "log 0.4.20",
+ "log 0.4.21",
  "ordered-float",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -935,7 +937,7 @@ dependencies = [
  "env_logger 0.9.3",
  "erased-serde",
  "futures",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -952,7 +954,7 @@ dependencies = [
  "dslab-network",
  "indexmap 1.9.3",
  "itertools 0.10.5",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -994,7 +996,7 @@ dependencies = [
  "dyn-clone",
  "env_logger 0.8.4",
  "indexmap 1.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -1023,7 +1025,7 @@ dependencies = [
  "dslab-core",
  "dyn-clone",
  "lazy_static",
- "log 0.4.20",
+ "log 0.4.21",
  "ordered-float",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -1053,7 +1055,7 @@ dependencies = [
  "dslab-core",
  "dslab-models",
  "indexmap 2.2.2",
- "log 0.4.20",
+ "log 0.4.21",
  "rstest",
  "serde",
 ]
@@ -1064,7 +1066,7 @@ version = "0.1.0"
 dependencies = [
  "dslab-core",
  "dslab-models",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -1105,6 +1107,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_filter"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a009aa4810eb158359dda09d0c87378e4bbb89b5a801f016885a4707ba24f7ea"
+dependencies = [
+ "log 0.4.21",
+ "regex",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1112,7 +1124,7 @@ checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
 dependencies = [
  "atty",
  "humantime",
- "log 0.4.20",
+ "log 0.4.21",
  "regex",
  "termcolor",
 ]
@@ -1125,7 +1137,7 @@ checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
 dependencies = [
  "atty",
  "humantime",
- "log 0.4.20",
+ "log 0.4.21",
  "regex",
  "termcolor",
 ]
@@ -1138,9 +1150,22 @@ checksum = "4cd405aab171cb85d6735e5c8d9db038c17d3ca007a4d2c25f337935c3d90580"
 dependencies = [
  "humantime",
  "is-terminal",
- "log 0.4.20",
+ "log 0.4.21",
  "regex",
  "termcolor",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38b35839ba51819680ba087cd351788c9a3c476841207e0b8cee0b04722343b9"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "env_filter",
+ "humantime",
+ "log 0.4.21",
 ]
 
 [[package]]
@@ -1185,7 +1210,7 @@ dependencies = [
  "dslab-core",
  "dslab-faas",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
 ]
 
 [[package]]
@@ -1291,7 +1316,7 @@ dependencies = [
  "freetype",
  "lazy_static",
  "libc",
- "log 0.4.20",
+ "log 0.4.21",
  "pathfinder_geometry",
  "pathfinder_simd",
  "walkdir",
@@ -1834,7 +1859,7 @@ dependencies = [
  "dslab-core",
  "dslab-iaas",
  "env_logger 0.8.4",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "sugars",
 ]
@@ -1847,7 +1872,7 @@ dependencies = [
  "dslab-core",
  "dslab-iaas",
  "env_logger 0.8.4",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "sugars",
 ]
@@ -1862,7 +1887,7 @@ dependencies = [
  "dslab-iaas",
  "env_logger 0.8.4",
  "indexmap 1.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "serde",
  "sugars",
@@ -1877,7 +1902,7 @@ dependencies = [
  "dslab-core",
  "dslab-iaas",
  "env_logger 0.8.4",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "serde",
  "sugars",
@@ -2138,14 +2163,14 @@ version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e19e8d5c34a3e0e2223db8e060f9e8264aeeb5c5fc64a4ee9965c062211c024b"
 dependencies = [
- "log 0.4.20",
+ "log 0.4.21",
 ]
 
 [[package]]
 name = "log"
-version = "0.4.20"
+version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "lru"
@@ -2175,7 +2200,7 @@ dependencies = [
  "dslab-network",
  "dslab-storage",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "priority-queue",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -2263,7 +2288,7 @@ dependencies = [
  "clap 3.2.25",
  "dslab-async-mp",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -2279,7 +2304,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -2296,7 +2321,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "sugars",
@@ -2313,7 +2338,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "md5",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -2331,7 +2356,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "md5",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
@@ -2349,7 +2374,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -2366,7 +2391,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -2383,7 +2408,7 @@ dependencies = [
  "dslab-mp",
  "dslab-mp-python",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "sugars",
 ]
 
@@ -2395,7 +2420,7 @@ checksum = "07226173c32f2926027b63cce4bcd8076c3552846cbe7925f3aaffeac0a3b92e"
 dependencies = [
  "lazy_static",
  "libc",
- "log 0.4.20",
+ "log 0.4.21",
  "openssl",
  "openssl-probe",
  "openssl-sys",
@@ -2413,7 +2438,7 @@ dependencies = [
  "dslab-core",
  "dslab-network",
  "env_logger 0.10.2",
- "log 0.4.20",
+ "log 0.4.21",
  "sugars",
 ]
 
@@ -2425,7 +2450,7 @@ dependencies = [
  "dslab-core",
  "dslab-network",
  "env_logger 0.10.2",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -2437,7 +2462,7 @@ dependencies = [
  "dslab-core",
  "dslab-network",
  "env_logger 0.10.2",
- "log 0.4.20",
+ "log 0.4.21",
  "sugars",
 ]
 
@@ -2732,7 +2757,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b7b7e7b4ea703700ce73ebf128e1450eb69c3a8329199ffbfb9b2a0418e5ad3"
 dependencies = [
- "log 0.4.20",
+ "log 0.4.21",
  "pathfinder_simd",
 ]
 
@@ -2878,7 +2903,7 @@ dependencies = [
  "dslab-core",
  "dslab-network",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -3376,7 +3401,7 @@ dependencies = [
  "hyper-tls",
  "ipnet",
  "js-sys",
- "log 0.4.20",
+ "log 0.4.21",
  "mime",
  "native-tls",
  "once_cell",
@@ -3590,7 +3615,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "65162e9059be2f6a3421ebbb4fef3e74b7d9e7c60c50a0e292c6239f19f1edfa"
 dependencies = [
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "thiserror",
  "xml-rs",
@@ -3691,7 +3716,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "45b60258a35dc3cb8a16890b8fd6723349bfa458d7960e25e633f1b1c19d7b5e"
 dependencies = [
  "atty",
- "log 0.4.20",
+ "log 0.4.21",
  "winapi",
 ]
 
@@ -3801,7 +3826,7 @@ dependencies = [
  "dslab-models",
  "dslab-storage",
  "env_logger 0.10.2",
- "log 0.4.20",
+ "log 0.4.21",
  "rand 0.8.5",
  "serde",
  "sugars",
@@ -3815,7 +3840,7 @@ dependencies = [
  "dslab-core",
  "dslab-storage",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -3827,7 +3852,7 @@ dependencies = [
  "dslab-core",
  "dslab-storage",
  "env_logger 0.10.2",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -3839,7 +3864,7 @@ dependencies = [
  "dslab-core",
  "dslab-storage",
  "env_logger 0.9.3",
- "log 0.4.20",
+ "log 0.4.21",
  "serde",
  "sugars",
 ]
@@ -4382,7 +4407,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcdc935b63408d58a32f8cc9738a0bffd8f05cc7c002086c6ef20b7312ad9dcd"
 dependencies = [
  "bumpalo",
- "log 0.4.20",
+ "log 0.4.21",
  "once_cell",
  "proc-macro2",
  "quote",

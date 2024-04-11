@@ -5,6 +5,7 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies]
+dslab-storage = { path = "../dslab-storage" }
 dslab-core = { path = "../dslab-core", features = ["async_core"] }
 colored = "2.0.0"
 downcast-rs = "1.2.0"

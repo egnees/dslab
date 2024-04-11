@@ -8,6 +8,7 @@ pub mod message;
 pub mod network;
 pub mod node;
 pub mod process;
+pub mod storage;
 pub mod system;
 pub mod test;
 mod util;

@@ -12,12 +12,14 @@ use dslab_storage::{
 use futures::{select, FutureExt};
 
 /// Represents error during reading.
+#[derive(Debug)]
 pub enum ReadError {
     /// File not found.
     FileNotFound(),
 }
 
 /// Represents error during writing.
+#[derive(Debug)]
 pub enum WriteError {
     /// File not found.
     FileNotFound(),
@@ -27,6 +29,7 @@ pub enum WriteError {
 }
 
 /// Represents error during creating file.
+#[derive(Debug)]
 pub enum CreateFileError {
     /// File already exists.
     FileAlreadyExists(),

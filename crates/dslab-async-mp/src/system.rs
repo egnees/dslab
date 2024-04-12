@@ -7,6 +7,8 @@ use std::rc::Rc;
 
 use dslab_core::async_core::EventKey;
 use dslab_core::handler::EventCancellationPolicy;
+use dslab_storage::disk::{Disk, DiskBuilder};
+use dslab_storage::events::{DataReadCompleted, DataReadFailed, DataWriteCompleted, DataWriteFailed};
 use rand::distributions::uniform::{SampleRange, SampleUniform};
 
 use dslab_core::{cast, Simulation};
@@ -17,6 +19,7 @@ use crate::message::Message;
 use crate::network::Network;
 use crate::node::{EventLogEntry, Node};
 use crate::process::Process;
+use crate::storage::{self, Storage};
 
 /// Models distributed system consisting of multiple nodes connected via network.
 pub struct System {
@@ -34,8 +37,14 @@ impl System {
         let mut sim = Simulation::new(seed);
         let net = Rc::new(RefCell::new(Network::new(sim.create_context("net"), logger.clone())));
 
-        // Register key getters.
+        // Network.
         sim.register_key_getter_for::<MessageAck>(|e| e.id as EventKey);
+
+        // Storage.
+        sim.register_key_getter_for::<DataReadCompleted>(|d| d.request_id as EventKey);
+        sim.register_key_getter_for::<DataReadFailed>(|d| d.request_id as EventKey);
+        sim.register_key_getter_for::<DataWriteCompleted>(|d| d.request_id as EventKey);
+        sim.register_key_getter_for::<DataWriteFailed>(|d| d.request_id as EventKey);
 
         Self {
             sim,
@@ -83,19 +92,50 @@ impl System {
     ///
     /// Note that node names must be unique.
     pub fn add_node(&mut self, name: &str) {
+        self.add_node_with_storage(name, 0)
+    }
+
+    /// Adds a not to the system with specified storage params.
+    pub fn add_node_with_storage(&mut self, name: &str, capacity: usize) {
+        let node_ctx = self.sim.create_context(name);
+
+        // Create storage.
+        let storage = {
+            let node_ctx = node_ctx.clone();
+            {
+                let mb = 1024 * 1024;
+
+                let read_bw: f64 = 300.0 * (mb as f64); // 300 Mb/s
+                let write_bw: f64 = 100.0 * (mb as f64); // 100 Mb/s
+
+                let disk_name = format!("{}_disk", name);
+                let disk =
+                    DiskBuilder::simple(capacity as u64, read_bw, write_bw).build(self.sim.create_context(&disk_name));
+                let disk = Rc::new(RefCell::new(disk));
+                self.sim.add_handler(&disk_name, disk.clone());
+
+                let storage = Storage::new(disk, node_ctx);
+                Rc::new(RefCell::new(storage))
+            }
+        };
+
+        // Create node with storage.
         let node = Rc::new(RefCell::new(Node::new(
             name.to_string(),
             self.net.clone(),
-            self.sim.create_context(name),
+            node_ctx.clone(),
             self.logger.clone(),
+            storage,
         )));
         let node_id = self.sim.add_handler(name, node.clone());
+
         assert!(
             self.nodes.insert(name.to_string(), node).is_none(),
             "Node with name {} already exists, node names must be unique",
             name
         );
         self.net.borrow_mut().add_node(name.to_string(), node_id);
+
         self.logger.borrow_mut().log(LogEntry::NodeStarted {
             time: self.sim.time(),
             node: name.to_string(),

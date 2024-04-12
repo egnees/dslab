@@ -15,6 +15,7 @@ use crate::logger::{LogEntry, Logger};
 use crate::message::Message;
 use crate::network::Network;
 use crate::process::{Process, ProcessState};
+use crate::storage::Storage;
 
 /// Event log entry as a pair of time and event.
 #[derive(Clone, Debug)]
@@ -122,6 +123,7 @@ pub struct Node {
     ctx: Rc<RefCell<SimulationContext>>,
     logger: Rc<RefCell<Logger>>,
     local_message_count: u64,
+    storage: Rc<RefCell<Storage>>,
 }
 
 impl Node {
@@ -130,6 +132,7 @@ impl Node {
         net: Rc<RefCell<Network>>,
         ctx: SimulationContext,
         logger: Rc<RefCell<Logger>>,
+        storage: Rc<RefCell<Storage>>,
     ) -> Self {
         Self {
             id: ctx.id(),
@@ -141,6 +144,7 @@ impl Node {
             ctx: Rc::new(RefCell::new(ctx)),
             logger,
             local_message_count: 0,
+            storage,
         }
     }
 
@@ -270,6 +274,7 @@ impl Node {
             self.ctx.clone(),
             self.net.clone(),
             self.clock_skew,
+            self.storage.clone(),
         );
 
         let cb_result = proc_entry.proc_impl.on_local_message(msg, proc_ctx);
@@ -311,6 +316,7 @@ impl Node {
             self.ctx.clone(),
             self.net.clone(),
             self.clock_skew,
+            self.storage.clone(),
         );
 
         let cb_result = proc_entry.proc_impl.on_message(msg, from, proc_ctx);
@@ -347,6 +353,7 @@ impl Node {
             self.ctx.clone(),
             self.net.clone(),
             self.clock_skew,
+            self.storage.clone(),
         );
 
         let cb_result = proc_entry.proc_impl.on_timer(timer, proc_ctx);

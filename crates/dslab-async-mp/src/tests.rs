@@ -105,3 +105,117 @@ fn reliable_works() {
     assert!(system.read_local_messages("s2").is_empty());
     assert!(system.read_local_messages("s2").is_empty());
 }
+
+#[derive(Clone, Default)]
+struct StorageTester {}
+
+impl Process for StorageTester {
+    fn on_message(&mut self, msg: Message, from: String, ctx: Context) -> Result<(), String> {
+        panic!("should not receive messages");
+    }
+
+    fn on_local_message(&mut self, msg: Message, ctx: Context) -> Result<(), String> {
+        match msg.tip.as_str() {
+            "read_all" => {
+                let name = msg.data;
+                ctx.clone().spawn(async move {
+                    let content = ctx.read_all(&name).await.unwrap();
+                    ctx.send_local(Message {
+                        tip: "ok".into(),
+                        data: String::from_utf8(content).unwrap(),
+                    })
+                });
+            }
+            "append" => {
+                let name_data: Vec<&str> = msg.data.split(":").collect();
+                let name = name_data[0].to_owned();
+                let data = name_data[1].to_owned();
+                ctx.clone().spawn(async move {
+                    ctx.append(&name, data.as_bytes()).await.unwrap();
+                    ctx.send_local(Message {
+                        tip: "ok".into(),
+                        data: String::new(),
+                    })
+                });
+            }
+            "create_file" => {
+                let name = msg.data;
+                ctx.clone().spawn(async move {
+                    ctx.create_file(&name).await.unwrap();
+                    ctx.send_local(Message {
+                        tip: "ok".into(),
+                        data: String::new(),
+                    })
+                });
+            }
+            _ => panic!("unexpected tip"),
+        }
+
+        Ok(())
+    }
+
+    fn on_timer(&mut self, timer: String, ctx: Context) -> Result<(), String> {
+        panic!("no timers");
+    }
+}
+
+#[test]
+fn storage() {
+    let mut sys = System::new(12345);
+
+    sys.add_node_with_storage("node", 1024 * 1024);
+
+    sys.add_process("p", Box::new(StorageTester::default()), "node");
+
+    sys.send_local_message(
+        "p",
+        Message {
+            tip: "create_file".into(),
+            data: "file1".into(),
+        },
+    );
+
+    let msg = sys.step_until_local_message("p").unwrap();
+    assert_eq!(msg.len(), 1);
+    assert_eq!(msg[0].tip, "ok");
+
+    sys.send_local_message(
+        "p",
+        Message {
+            tip: "append".into(),
+            data: "file1:string1\n".into(),
+        },
+    );
+
+    let msg = sys.step_until_local_message("p").unwrap();
+    assert_eq!(msg.len(), 1);
+    assert_eq!(msg[0].tip, "ok");
+
+    sys.send_local_message(
+        "p",
+        Message {
+            tip: "append".into(),
+            data: "file1:string2\n".into(),
+        },
+    );
+
+    let msg = sys.step_until_local_message("p").unwrap();
+    assert_eq!(msg.len(), 1);
+    assert_eq!(msg[0].tip, "ok");
+
+    sys.send_local_message(
+        "p",
+        Message {
+            tip: "read_all".into(),
+            data: "file1".into(),
+        },
+    );
+
+    let msg = sys.step_until_local_message("p").unwrap();
+    assert_eq!(msg.len(), 1);
+    assert_eq!(msg[0].tip, "ok");
+    let data = &msg[0].data;
+    assert_eq!(data, "string1\nstring2\n");
+
+    assert!(sys.time() > 0.0);
+}

@@ -168,16 +168,18 @@ impl Node {
         self.is_crashed
     }
 
-    /// Marks the node as crashed.
+    /// Marks the node and storage as crashed.
     pub fn crash(&mut self) {
+        self.storage.borrow_mut().crash();
         self.is_crashed = true;
     }
 
-    /// Recovers the node after crash.
+    /// Recovers the node and storage after crash.
     pub fn recover(&mut self) {
         // processes are cleared on recover instead of the crash
         // to allow working with processes after the crash (i.e. examine event log)
         self.processes.clear();
+        self.storage.borrow_mut().recover();
         self.is_crashed = false;
     }
 

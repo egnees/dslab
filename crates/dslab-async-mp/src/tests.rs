@@ -218,4 +218,26 @@ fn storage() {
     assert_eq!(data, "string1\nstring2\n");
 
     assert!(sys.time() > 0.0);
+
+    sys.crash_node("node");
+    sys.step_until_no_events();
+
+    sys.recover_node("node");
+    sys.step_until_no_events();
+
+    sys.add_process("p", Box::new(StorageTester::default()), "node");
+
+    sys.send_local_message(
+        "p",
+        Message {
+            tip: "read_all".into(),
+            data: "file1".into(),
+        },
+    );
+
+    let msg = sys.step_until_local_message("p").unwrap();
+    assert_eq!(msg.len(), 1);
+    assert_eq!(msg[0].tip, "ok");
+    let data = &msg[0].data;
+    assert_eq!(data, "string1\nstring2\n");
 }

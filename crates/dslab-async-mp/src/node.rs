@@ -110,6 +110,12 @@ impl ProcessEntry {
     }
 }
 
+enum State {
+    Running,
+    Shut,
+    Crashed,
+}
+
 /// Represents a node which is connected to the network and hosts one or more processes.
 pub struct Node {
     /// Identifier of simulation component.
@@ -119,7 +125,7 @@ pub struct Node {
     processes: HashMap<String, ProcessEntry>,
     net: Rc<RefCell<Network>>,
     clock_skew: f64,
-    is_crashed: bool,
+    state: State,
     ctx: Rc<RefCell<SimulationContext>>,
     logger: Rc<RefCell<Logger>>,
     local_message_count: u64,
@@ -140,7 +146,7 @@ impl Node {
             processes: HashMap::new(),
             net,
             clock_skew: 0.,
-            is_crashed: false,
+            state: State::Running,
             ctx: Rc::new(RefCell::new(ctx)),
             logger,
             local_message_count: 0,
@@ -165,22 +171,65 @@ impl Node {
 
     /// Returns true if the node is crashed.
     pub fn is_crashed(&self) -> bool {
-        self.is_crashed
+        match self.state {
+            State::Running => false,
+            State::Shut => false,
+            State::Crashed => true,
+        }
+    }
+
+    /// Returns true if node is shutdown.
+    pub fn is_shut(&self) -> bool {
+        match self.state {
+            State::Running => false,
+            State::Shut => true,
+            State::Crashed => false,
+        }
+    }
+
+    /// Marks the node as shut.
+    /// Storage will not be crashed.
+    pub fn shutdown(&mut self) {
+        match self.state {
+            State::Running => self.state = State::Shut, // Processes will be removed on rerunning.
+            State::Shut => panic!("trying to shutdown turned off node"),
+            State::Crashed => panic!("trying to shutdown crashed node"),
+        }
+    }
+
+    /// Run node after shutdown.
+    pub fn rerun(&mut self) {
+        match self.state {
+            State::Running => panic!("trying to rerun running node"),
+            State::Shut => {
+                // Remove process on rerunning to allow working with them after shutdown.
+                self.processes.clear();
+                self.state = State::Running;
+            }
+            State::Crashed => panic!("trying to rerun crashed node"),
+        }
     }
 
     /// Marks the node and storage as crashed.
     pub fn crash(&mut self) {
+        // Node in every state can be crashed.
         self.storage.borrow_mut().crash();
-        self.is_crashed = true;
+        self.state = State::Crashed;
     }
 
     /// Recovers the node and storage after crash.
     pub fn recover(&mut self) {
-        // processes are cleared on recover instead of the crash
-        // to allow working with processes after the crash (i.e. examine event log)
-        self.processes.clear();
-        self.storage.borrow_mut().recover();
-        self.is_crashed = false;
+        match self.state {
+            State::Running => panic!("trying to recover running node"),
+            State::Shut => panic!("trying to recover turned off, but not crashed node."),
+            State::Crashed => {
+                // processes are cleared on recover instead of the crash
+                // to allow working with processes after the crash (i.e. examine event log)
+                self.processes.clear();
+                self.storage.borrow_mut().recover();
+                self.state = State::Running;
+            }
+        }
     }
 
     /// Spawns new process on the node.

@@ -70,6 +70,7 @@ impl Storage {
     }
 
     /// Sets state to [`State::Unavailable`].
+    /// Storage data will not be destroyed until recover will be called.
     pub fn crash(&mut self) {
         self.state = State::Unavailable;
     }
@@ -82,6 +83,8 @@ impl Storage {
         match self.state {
             State::Available => panic!("recovered from available state"),
             State::Unavailable => {
+                // Data is destroyed on recovery to allow working with it after crash.
+
                 // Delete files.
                 self.files_content = HashMap::new();
                 self.state = State::Available;

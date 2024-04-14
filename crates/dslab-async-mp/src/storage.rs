@@ -81,8 +81,8 @@ impl Storage {
     /// In case of recovering from [`State::Available`] state.
     pub fn recover(&mut self) {
         match self.state {
-            State::Available => panic!("recovered from available state"),
-            State::Unavailable => {
+            State::Unavailable => panic!("recovery from available state"),
+            State::Available => {
                 // Data is destroyed on recovery to allow working with it after crash.
 
                 // Delete files.
@@ -101,8 +101,8 @@ impl Storage {
     /// [`CreateFileError::FileAlreadyExists`] will be returned.
     pub async fn create_file(&mut self, name: &str) -> Result<(), CreateFileError> {
         match self.state {
-            State::Available => Err(CreateFileError::Unavailable()),
-            State::Unavailable => {
+            State::Unavailable => Err(CreateFileError::Unavailable()),
+            State::Available => {
                 if self.files_content.contains_key(name) {
                     Err(CreateFileError::FileAlreadyExists())
                 } else {
@@ -114,11 +114,33 @@ impl Storage {
         }
     }
 
+    /// Read file content from the specified offset to the specified destination.
+    ///
+    /// # Returns
+    /// The number of read bytes.
+    pub async fn read(&mut self, file: &str, offset: usize, dst: &mut [u8]) -> Result<usize, ReadError> {
+        match self.state {
+            State::Available => {
+                if !self.files_content.contains_key(file) {
+                    return Err(ReadError::FileNotFound());
+                }
+                let content = self.files_content.get(file).unwrap();
+                if offset >= content.len() {
+                    return Ok(0);
+                }
+                let copy_len = dst.len().min(content.len() - offset);
+                dst[..copy_len].copy_from_slice(&content.as_slice()[offset..offset + copy_len]);
+                Ok(copy_len)
+            }
+            State::Unavailable => Err(ReadError::Unavailable()),
+        }
+    }
+
     /// Read file content.
     pub async fn read_all(&mut self, name: &str) -> Result<Vec<u8>, ReadError> {
         match self.state {
-            State::Available => Err(ReadError::Unavailable()),
-            State::Unavailable => {
+            State::Unavailable => Err(ReadError::Unavailable()),
+            State::Available => {
                 if !self.files_content.contains_key(name) {
                     return Err(ReadError::FileNotFound());
                 }

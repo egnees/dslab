@@ -242,12 +242,12 @@ impl Context {
     }
 
     /// Delete file with specified name.
-    pub async fn delete_file(&mut self, name: &str) -> Result<(), DeleteFileError> {
+    pub async fn delete_file(&self, name: &str) -> Result<(), DeleteFileError> {
         self.storage.borrow_mut().delete_file(name).await
     }
 
     /// Read file from specified offset to the specified buffer.
-    pub async fn read(&mut self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
+    pub async fn read(&self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
         self.storage.borrow_mut().read(file, offset, buf).await
     }
 

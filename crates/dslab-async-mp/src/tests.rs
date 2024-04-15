@@ -110,7 +110,7 @@ fn reliable_works() {
 struct StorageTester {}
 
 impl Process for StorageTester {
-    fn on_message(&mut self, msg: Message, from: String, ctx: Context) -> Result<(), String> {
+    fn on_message(&mut self, _msg: Message, _from: String, _ctx: Context) -> Result<(), String> {
         panic!("should not receive messages");
     }
 
@@ -154,7 +154,7 @@ impl Process for StorageTester {
         Ok(())
     }
 
-    fn on_timer(&mut self, timer: String, ctx: Context) -> Result<(), String> {
+    fn on_timer(&mut self, _timer: String, _ctx: Context) -> Result<(), String> {
         panic!("no timers");
     }
 }

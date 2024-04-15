@@ -152,6 +152,8 @@ impl Storage {
     /// # Returns
     /// The number of read bytes.
     pub async fn read(&mut self, file: &str, offset: usize, dst: &mut [u8]) -> Result<usize, ReadError> {
+        // If the destination buffer length is greater than the maximum allowed buffer size,
+        // then panic.
         if dst.len() > MAX_BUFFER_SIZE {
             panic!(
                 "size of buffer exceeds max size: {} exceeds {}",

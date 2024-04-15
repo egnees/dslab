@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use dslab_core::async_core::EventKey;
 use dslab_core::handler::EventCancellationPolicy;
-use dslab_storage::disk::{Disk, DiskBuilder};
+use dslab_storage::disk::DiskBuilder;
 use dslab_storage::events::{DataReadCompleted, DataReadFailed, DataWriteCompleted, DataWriteFailed};
 use rand::distributions::uniform::{SampleRange, SampleUniform};
 
@@ -19,7 +19,7 @@ use crate::message::Message;
 use crate::network::Network;
 use crate::node::{EventLogEntry, Node};
 use crate::process::Process;
-use crate::storage::{self, Storage};
+use crate::storage::Storage;
 
 /// Models distributed system consisting of multiple nodes connected via network.
 pub struct System {

@@ -151,13 +151,13 @@ impl Storage {
     ///
     /// # Returns
     /// The number of read bytes.
-    pub async fn read(&mut self, file: &str, offset: usize, dst: &mut [u8]) -> Result<usize, ReadError> {
+    pub async fn read(&mut self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
         // If the destination buffer length is greater than the maximum allowed buffer size,
         // then panic.
-        if dst.len() > MAX_BUFFER_SIZE {
+        if buf.len() > MAX_BUFFER_SIZE {
             panic!(
                 "size of buffer exceeds max size: {} exceeds {}",
-                dst.len(),
+                buf.len(),
                 MAX_BUFFER_SIZE
             );
         }
@@ -171,8 +171,8 @@ impl Storage {
                 if offset >= content.len() {
                     return Ok(0);
                 }
-                let copy_len = dst.len().min(content.len() - offset).min(TYPICAL_READ_SIZE);
-                dst[..copy_len].copy_from_slice(&content.as_slice()[offset..offset + copy_len]);
+                let copy_len = buf.len().min(content.len() - offset).min(TYPICAL_READ_SIZE);
+                buf[..copy_len].copy_from_slice(&content.as_slice()[offset..offset + copy_len]);
                 Ok(copy_len)
             }
             State::Unavailable => Err(ReadError::Unavailable),

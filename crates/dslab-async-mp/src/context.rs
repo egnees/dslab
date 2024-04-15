@@ -13,7 +13,7 @@ use crate::events::{ActivityFinished, MessageAck, SleepFinished, SleepStarted};
 use crate::message::Message;
 use crate::network::Network;
 use crate::node::{ProcessEvent, TimerBehavior};
-use crate::storage::{CreateFileError, ReadError, Storage, WriteError};
+use crate::storage::{CreateFileError, DeleteFileError, ReadError, Storage, WriteError};
 
 /// Proxy for interaction of a process with the system.
 /// Clones of [Context] shares the same state.
@@ -239,6 +239,16 @@ impl Context {
     /// error will be returned.
     pub async fn create_file(&self, name: &str) -> Result<(), CreateFileError> {
         self.storage.borrow_mut().create_file(name).await
+    }
+
+    /// Delete file with specified name.
+    pub async fn delete_file(&mut self, name: &str) -> Result<(), DeleteFileError> {
+        self.storage.borrow_mut().delete_file(name).await
+    }
+
+    /// Read file from specified offset to the specified buffer.
+    pub async fn read(&mut self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
+        self.storage.borrow_mut().read(file, offset, buf).await
     }
 
     /// Read file with specified name.

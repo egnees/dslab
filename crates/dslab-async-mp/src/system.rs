@@ -269,7 +269,7 @@ impl System {
     /// Storage persists.
     pub fn rerun_node(&mut self, node_name: &str) {
         assert!(
-            self.node_is_crashed(node_name),
+            self.node_is_shut(node_name),
             "Node is not crashed to be eligible for recovery"
         );
         let node = self.nodes.get(node_name).unwrap();

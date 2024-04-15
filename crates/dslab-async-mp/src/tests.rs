@@ -219,10 +219,10 @@ fn storage() {
 
     assert!(sys.time() > 0.0);
 
-    sys.crash_node("node");
+    sys.shutdown_node("node");
     sys.step_until_no_events();
 
-    sys.recover_node("node");
+    sys.rerun_node("node");
     sys.step_until_no_events();
 
     sys.add_process("p", Box::new(StorageTester::default()), "node");

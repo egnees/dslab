@@ -202,7 +202,7 @@ impl Storage {
     }
 
     /// Append to file.
-    pub async fn append(&mut self, name: &str, data: &[u8]) -> Result<(), WriteError> {
+    pub async fn append(&mut self, file: &str, data: &[u8]) -> Result<(), WriteError> {
         match self.state {
             State::Unavailable => Err(WriteError::Unavailable),
             State::Available => {

@@ -101,22 +101,19 @@ impl System {
 
         // Create storage.
         let storage = {
-            let node_ctx = node_ctx.clone();
-            {
-                let mb = 1024 * 1024;
+            let mb = 1024 * 1024;
 
-                let read_bw: f64 = 300.0 * (mb as f64); // 300 Mb/s
-                let write_bw: f64 = 100.0 * (mb as f64); // 100 Mb/s
+            let read_bw: f64 = 300.0 * (mb as f64); // 300 Mb/s
+            let write_bw: f64 = 100.0 * (mb as f64); // 100 Mb/s
 
-                let disk_name = format!("{}_disk", name);
-                let disk =
-                    DiskBuilder::simple(capacity as u64, read_bw, write_bw).build(self.sim.create_context(&disk_name));
-                let disk = Rc::new(RefCell::new(disk));
-                self.sim.add_handler(&disk_name, disk.clone());
+            let disk_name = format!("{}_disk", name);
+            let disk =
+                DiskBuilder::simple(capacity as u64, read_bw, write_bw).build(self.sim.create_context(&disk_name));
+            let disk = Rc::new(RefCell::new(disk));
+            self.sim.add_handler(&disk_name, disk.clone());
 
-                let storage = Storage::new(disk, node_ctx);
-                Rc::new(RefCell::new(storage))
-            }
+            let storage = Storage::new(disk, node_ctx.clone());
+            Rc::new(RefCell::new(storage))
         };
 
         // Create node with storage.
@@ -148,7 +145,7 @@ impl System {
         self.nodes[node].borrow_mut().set_clock_skew(clock_skew);
     }
 
-    /// Crashes the specified node.
+    /// Crashes the specified node with storage.
     ///
     /// All pending events created by the node will be discarded.
     /// The undelivered messages sent by the node will be dropped.
@@ -195,10 +192,11 @@ impl System {
         self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
     }
 
-    /// Recovers the previously crashed node.
+    /// Recovers the previously crashed node and storage.
     ///
     /// Processes running on the node before the crash are cleared.
     /// The delivery of events to the node is enabled.
+    /// Storage is empty with initial capacity.
     pub fn recover_node(&mut self, node_name: &str) {
         assert!(
             self.node_is_crashed(node_name),
@@ -206,6 +204,76 @@ impl System {
         );
         let node = self.nodes.get(node_name).unwrap();
         node.borrow_mut().recover();
+        self.sim.add_handler(node_name, node.clone());
+
+        // remove previous process-node mappings to enable recreating these processes
+        self.proc_nodes.retain(|_, node| node.borrow().name != node_name);
+
+        self.logger.borrow_mut().log(LogEntry::NodeRecovered {
+            time: self.sim.time(),
+            node: node_name.to_string(),
+        });
+    }
+
+    /// Shutdowns the specified node.
+    ///
+    /// All pending events created by the node will be discarded.
+    /// The undelivered messages sent by the node will be dropped.
+    /// All pending and future events destined to the node will be discarded.
+    ///
+    /// Processes running on the node are not cleared to allow working
+    /// with processes after the crash (i.e. examine event log).
+    pub fn shutdown_node(&mut self, node_name: &str) {
+        let node = self.nodes.get(node_name).unwrap();
+        node.borrow_mut().shutdown();
+
+        self.logger.borrow_mut().log(LogEntry::NodeCrashed {
+            time: self.sim.time(),
+            node: node_name.to_string(),
+        });
+
+        // cancel pending events (i.e. undelivered messages) from the crashed node
+        let node_id = self.sim.lookup_id(node_name);
+        let cancelled = self.sim.cancel_and_get_events(|e| e.src == node_id);
+        for event in cancelled {
+            cast!(match event.data {
+                MessageReceived {
+                    id,
+                    msg,
+                    src,
+                    src_node,
+                    dst,
+                    dst_node,
+                } => {
+                    self.logger.borrow_mut().log(LogEntry::MessageDropped {
+                        time: self.sim.time(),
+                        msg_id: id.to_string(),
+                        msg,
+                        src_proc: src,
+                        src_node,
+                        dst_proc: dst,
+                        dst_node,
+                    });
+                }
+            })
+        }
+
+        // remove the handler to discard all pending and future events sent to this node
+        self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
+    }
+
+    /// Runs the previously shut node.
+    ///
+    /// Processes running on the node before the shutdown are cleared.
+    /// The delivery of events to the node is enabled.
+    /// Storage persists.
+    pub fn rerun_node(&mut self, node_name: &str) {
+        assert!(
+            self.node_is_crashed(node_name),
+            "Node is not crashed to be eligible for recovery"
+        );
+        let node = self.nodes.get(node_name).unwrap();
+        node.borrow_mut().rerun();
         self.sim.add_handler(node_name, node.clone());
 
         // remove previous process-node mappings to enable recreating these processes
@@ -230,6 +298,11 @@ impl System {
     /// Checks if the node is crashed.
     pub fn node_is_crashed(&self, node: &str) -> bool {
         self.nodes.get(node).unwrap().borrow().is_crashed()
+    }
+
+    /// Check if the node is turned off.
+    pub fn node_is_shut(&self, node: &str) -> bool {
+        self.nodes.get(node).unwrap().borrow().is_shut()
     }
 
     // Processes -------------------------------------------------------------------------------------------------------

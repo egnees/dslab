@@ -15,30 +15,39 @@ use futures::{select, FutureExt};
 #[derive(Debug)]
 pub enum ReadError {
     /// File not found.
-    FileNotFound(),
+    FileNotFound,
     /// Storage is unavailable.
-    Unavailable(),
+    Unavailable,
 }
 
 /// Represents error during writing.
 #[derive(Debug)]
 pub enum WriteError {
     /// File not found.
-    FileNotFound(),
+    FileNotFound,
     /// There is no enough memory in storage to write in the file.
     /// File not changed.
-    OutOfMemory(),
+    OutOfMemory,
     /// Storage is unavailable.
-    Unavailable(),
+    Unavailable,
 }
 
 /// Represents error during creating file.
 #[derive(Debug)]
 pub enum CreateFileError {
     /// File already exists.
-    FileAlreadyExists(),
+    FileAlreadyExists,
     /// Storage is unavailable.
-    Unavailable(),
+    Unavailable,
+}
+
+/// Represents error during removing file.
+#[derive(Debug)]
+pub enum DeleteFileError {
+    /// File not found.
+    FileNotFound,
+    /// Storage is unavailable.
+    Unavailable,
 }
 
 /// Represents state of the storage.
@@ -107,16 +116,34 @@ impl Storage {
     /// [`CreateFileError::FileAlreadyExists`] will be returned.
     pub async fn create_file(&mut self, name: &str) -> Result<(), CreateFileError> {
         match self.state {
-            State::Unavailable => Err(CreateFileError::Unavailable()),
+            State::Unavailable => Err(CreateFileError::Unavailable),
             State::Available => {
                 if self.files_content.contains_key(name) {
-                    Err(CreateFileError::FileAlreadyExists())
+                    Err(CreateFileError::FileAlreadyExists)
                 } else {
                     let exists = self.files_content.insert(name.into(), Vec::new()).is_some();
                     assert!(!exists);
                     Ok(())
                 }
             }
+        }
+    }
+
+    /// Delete file with specified name.
+    pub async fn delete_file(&mut self, name: &str) -> Result<(), DeleteFileError> {
+        match self.state {
+            State::Available => {
+                if let Some(file) = self.files_content.remove(name) {
+                    self.model
+                        .borrow_mut()
+                        .mark_free(file.len().try_into().unwrap())
+                        .unwrap();
+                    Ok(())
+                } else {
+                    Err(DeleteFileError::FileNotFound)
+                }
+            }
+            State::Unavailable => Err(DeleteFileError::Unavailable),
         }
     }
 
@@ -136,7 +163,7 @@ impl Storage {
         match self.state {
             State::Available => {
                 if !self.files_content.contains_key(file) {
-                    return Err(ReadError::FileNotFound());
+                    return Err(ReadError::FileNotFound);
                 }
                 let content = self.files_content.get(file).unwrap();
                 if offset >= content.len() {
@@ -146,17 +173,17 @@ impl Storage {
                 dst[..copy_len].copy_from_slice(&content.as_slice()[offset..offset + copy_len]);
                 Ok(copy_len)
             }
-            State::Unavailable => Err(ReadError::Unavailable()),
+            State::Unavailable => Err(ReadError::Unavailable),
         }
     }
 
     /// Read file content.
     pub async fn read_all(&mut self, name: &str) -> Result<Vec<u8>, ReadError> {
         match self.state {
-            State::Unavailable => Err(ReadError::Unavailable()),
+            State::Unavailable => Err(ReadError::Unavailable),
             State::Available => {
                 if !self.files_content.contains_key(name) {
-                    return Err(ReadError::FileNotFound());
+                    return Err(ReadError::FileNotFound);
                 }
 
                 let content = self.files_content.get(name).unwrap();
@@ -177,10 +204,10 @@ impl Storage {
     /// Append to file.
     pub async fn append(&mut self, name: &str, data: &[u8]) -> Result<(), WriteError> {
         match self.state {
-            State::Available => Err(WriteError::Unavailable()),
-            State::Unavailable => {
+            State::Unavailable => Err(WriteError::Unavailable),
+            State::Available => {
                 if !self.files_content.contains_key(name) {
-                    return Err(WriteError::FileNotFound());
+                    return Err(WriteError::FileNotFound);
                 }
 
                 let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
@@ -191,7 +218,7 @@ impl Storage {
                         Ok(())
                     }
                     _ = self.ctx.recv_event_by_key::<DataWriteFailed>(key).fuse() => {
-                        Err(WriteError::OutOfMemory())
+                        Err(WriteError::OutOfMemory)
                     }
                 }
             }

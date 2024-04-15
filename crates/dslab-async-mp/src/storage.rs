@@ -206,14 +206,14 @@ impl Storage {
         match self.state {
             State::Unavailable => Err(WriteError::Unavailable),
             State::Available => {
-                if !self.files_content.contains_key(name) {
+                if !self.files_content.contains_key(file) {
                     return Err(WriteError::FileNotFound);
                 }
 
                 let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
                 select! {
                     _ = self.ctx.recv_event_by_key::<DataWriteCompleted>(key).fuse() => {
-                        let content = self.files_content.get_mut(name).unwrap();
+                        let content = self.files_content.get_mut(file).unwrap();
                         content.extend_from_slice(data);
                         Ok(())
                     }

@@ -58,6 +58,12 @@ pub struct Storage {
     state: State,
 }
 
+/// Represents max size of buffer for read request.
+pub const MAX_BUFFER_SIZE: usize = 1 << 30; // 1 Gb.
+
+/// Represents typical number of bytes, returned by `[Storage::read]`.
+const TYPICAL_READ_SIZE: usize = 2 * (1 << 20); // 2 Mb.
+
 impl Storage {
     /// Creates a new storage.
     pub fn new(disk: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext) -> Self {
@@ -119,6 +125,14 @@ impl Storage {
     /// # Returns
     /// The number of read bytes.
     pub async fn read(&mut self, file: &str, offset: usize, dst: &mut [u8]) -> Result<usize, ReadError> {
+        if dst.len() > MAX_BUFFER_SIZE {
+            panic!(
+                "size of buffer exceeds max size: {} exceeds {}",
+                dst.len(),
+                MAX_BUFFER_SIZE
+            );
+        }
+
         match self.state {
             State::Available => {
                 if !self.files_content.contains_key(file) {
@@ -128,7 +142,7 @@ impl Storage {
                 if offset >= content.len() {
                     return Ok(0);
                 }
-                let copy_len = dst.len().min(content.len() - offset);
+                let copy_len = dst.len().min(content.len() - offset).min(TYPICAL_READ_SIZE);
                 dst[..copy_len].copy_from_slice(&content.as_slice()[offset..offset + copy_len]);
                 Ok(copy_len)
             }

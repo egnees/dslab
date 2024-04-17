@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 use dslab_core::async_core::AwaitResult;
 use dslab_core::SimulationContext;
+use futures::{select, FutureExt};
 use rand::Rng;
 use rand_pcg::Pcg64;
 
@@ -148,26 +149,15 @@ impl Context {
         println!("timeout is {}", timeout);
         println!("simulation time is {}", self.time());
 
-        let send_result = self
-            .sim_ctx
-            .borrow()
-            .recv_event_by_key::<MessageAck>(event_key)
-            .with_timeout(timeout)
-            .await;
-
-        match send_result {
-            AwaitResult::Timeout(info) => {
-                println!("after, timeout is {}", timeout);
-                println!("simulation time is {}", self.time());
-                Err(format!("timeout: {}", info.timeout))
-            }
-            AwaitResult::Ok((_, ack)) => {
+        select! {
+            (_, ack) = self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).fuse() => {
                 if ack.delivered {
                     Ok(())
                 } else {
-                    Err("message not delivered".into())
+                    Err("not delivered".into())
                 }
-            }
+            },
+            _ = self.sim_ctx.borrow().sleep(timeout).fuse() => Err("timeout".into())
         }
     }
 

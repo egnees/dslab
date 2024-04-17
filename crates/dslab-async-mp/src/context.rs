@@ -146,9 +146,6 @@ impl Context {
 
         let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
-        println!("timeout is {}", timeout);
-        println!("simulation time is {}", self.time());
-
         select! {
             (_, ack) = self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).fuse() => {
                 if ack.delivered {
@@ -157,7 +154,12 @@ impl Context {
                     Err("not delivered".into())
                 }
             },
-            _ = self.sim_ctx.borrow().sleep(timeout).fuse() => Err("timeout".into())
+            _ = self.sim_ctx.borrow().sleep(timeout).fuse() => {
+                println!("timeout is {}", timeout);
+                println!("simulation time is {}", self.time());
+
+                Err("timeout".into())
+            }
         }
     }
 

@@ -593,9 +593,6 @@ impl EventHandler for Node {
             ActivityFinished { proc } => {
                 self.on_async_finished(proc);
             }
-            MessageAck { id, delivered } => {
-                println!("message ack!, id: {}, delivered: {}", id, delivered);
-            }
         })
     }
 }

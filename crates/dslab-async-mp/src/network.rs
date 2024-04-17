@@ -297,6 +297,7 @@ impl Network {
         let dst_node_id = *self.node_ids.get(dst_node).unwrap();
 
         let msg_id = self.message_count;
+        self.message_count += 1;
 
         self.log_message_sent(
             msg_id,
@@ -354,7 +355,6 @@ impl Network {
             self.network_message_count += 1;
             self.traffic += msg_size as u64;
         }
-        self.message_count += 1;
     }
 
     /// Reliable send message between two processes.
@@ -368,6 +368,7 @@ impl Network {
         let dst_node_id = *self.node_ids.get(dst_node).unwrap();
 
         let msg_id = self.message_count;
+        self.message_count += 1;
 
         self.log_message_sent(
             msg_id,
@@ -377,8 +378,6 @@ impl Network {
             dst.to_string(),
             msg.clone(),
         );
-
-        self.message_count += 1;
 
         let msg_dropped = src_node != dst_node
             && (self.drop_outgoing.contains(src)

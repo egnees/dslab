@@ -146,6 +146,7 @@ impl Context {
         let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
         println!("timeout is {}", timeout);
+        println!("simulation time is {}", self.time());
 
         let send_result = self
             .sim_ctx
@@ -157,6 +158,7 @@ impl Context {
         match send_result {
             AwaitResult::Timeout(info) => {
                 println!("after, timeout is {}", timeout);
+                println!("simulation time is {}", self.time());
                 Err(format!("timeout: {}", info.timeout))
             }
             AwaitResult::Ok((_, ack)) => {

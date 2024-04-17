@@ -153,7 +153,7 @@ impl Context {
             .await;
 
         match send_result {
-            AwaitResult::Timeout(_) => Err("timeout".into()),
+            AwaitResult::Timeout(info) => Err(format!("timeout: {}", info.timeout)),
             AwaitResult::Ok((_, ack)) => {
                 if ack.delivered {
                     Ok(())

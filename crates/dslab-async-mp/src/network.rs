@@ -390,8 +390,6 @@ impl Network {
         };
         let event_key = ack.id as EventKey;
 
-        println!("msg dropped: {}", msg_dropped);
-
         if msg_dropped {
             let delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
             self.ctx.emit_as(ack, src_node_id, dst_node_id, delay);

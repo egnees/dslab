@@ -409,7 +409,7 @@ impl Network {
                 self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay)
             };
 
-            self.ctx.emit_as(e.clone(), src_node_id, dst_node_id, msg_delay);
+            self.ctx.emit_as(e, src_node_id, dst_node_id, msg_delay);
             self.ctx.emit_as(ack, src_node_id, dst_node_id, msg_delay);
         }
 

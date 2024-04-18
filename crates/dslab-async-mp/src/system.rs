@@ -98,6 +98,7 @@ impl System {
     /// Adds a not to the system with specified storage params.
     pub fn add_node_with_storage(&mut self, name: &str, capacity: usize) {
         let node_ctx = self.sim.create_context(name);
+        node_ctx.register_key_getter_for::<MessageAck>(|e| e.id);
 
         // Create storage.
         let storage = {

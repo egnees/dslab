@@ -126,7 +126,7 @@ pub struct Node {
     net: Rc<RefCell<Network>>,
     clock_skew: f64,
     state: State,
-    ctx: Rc<RefCell<SimulationContext>>,
+    ctx: SimulationContext,
     logger: Rc<RefCell<Logger>>,
     local_message_count: u64,
     storage: Rc<RefCell<Storage>>,
@@ -147,7 +147,7 @@ impl Node {
             net,
             clock_skew: 0.,
             state: State::Running,
-            ctx: Rc::new(RefCell::new(ctx)),
+            ctx,
             logger,
             local_message_count: 0,
             storage,
@@ -303,7 +303,7 @@ impl Node {
     }
 
     fn on_local_message_received(&mut self, proc: String, msg: Message) {
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
         self.logger.borrow_mut().log(LogEntry::LocalMessageReceived {
             time,
             msg_id: self.get_local_message_id(&proc, self.local_message_count),
@@ -340,7 +340,7 @@ impl Node {
     }
 
     fn on_message_received(&mut self, msg_id: u64, proc: String, msg: Message, from: String, from_node: String) {
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
         self.logger.borrow_mut().log(LogEntry::MessageReceived {
             time,
             msg_id: msg_id.to_string(),
@@ -386,7 +386,7 @@ impl Node {
     }
 
     fn on_timer_fired(&mut self, proc: String, timer: String) {
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
 
         let proc_entry = self.processes.get_mut(&proc).unwrap();
         if let Some(timer_id) = proc_entry.pending_timers.remove(&timer) {
@@ -424,7 +424,7 @@ impl Node {
 
     fn on_sleep_started(&mut self, proc: String, duration: f64) {
         // Log info.
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
         self.logger.borrow_mut().log(LogEntry::ProcessSleep {
             proc_name: proc.clone(),
             time,
@@ -439,7 +439,7 @@ impl Node {
 
     fn on_sleep_finished(&mut self, proc: String) {
         // Log info.
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
         self.logger.borrow_mut().log(LogEntry::ProcessWakeUp {
             proc_name: proc.clone(),
             time,
@@ -450,7 +450,7 @@ impl Node {
 
     fn on_async_finished(&mut self, proc: String) {
         // Handle appeared actions.
-        let time = self.ctx.borrow().time();
+        let time = self.ctx.time();
         let proc_entry = self.processes.get_mut(&proc).unwrap();
         let actions = proc_entry.extract_pending_actions();
         self.handle_process_actions(proc, time, actions);
@@ -487,7 +487,7 @@ impl Node {
                 ProcessEvent::TimerSet { name, delay, behavior } => {
                     if let Some(event_id) = proc_entry.pending_timers.get(&name) {
                         if behavior == TimerBehavior::OverrideExisting {
-                            self.ctx.borrow_mut().cancel_event(*event_id);
+                            self.ctx.cancel_event(*event_id);
                         } else {
                             continue;
                         }
@@ -496,7 +496,7 @@ impl Node {
                         timer: name.clone(),
                         proc: proc.clone(),
                     };
-                    let event_id = self.ctx.borrow_mut().emit_self(event, delay);
+                    let event_id = self.ctx.emit_self(event, delay);
                     proc_entry.pending_timers.insert(name.clone(), event_id);
 
                     self.logger.borrow_mut().log(LogEntry::TimerSet {
@@ -518,7 +518,7 @@ impl Node {
                             proc: proc.clone(),
                         });
 
-                        self.ctx.borrow_mut().cancel_event(event_id);
+                        self.ctx.cancel_event(event_id);
                     }
                 }
                 _ => {}
@@ -547,7 +547,7 @@ impl Node {
         if state != proc_entry.last_state {
             self.processes.get_mut(proc).unwrap().last_state = state.clone();
             self.logger.borrow_mut().log(LogEntry::ProcessStateUpdated {
-                time: self.ctx.borrow().time(),
+                time: self.ctx.time(),
                 node: self.name.clone(),
                 proc: proc.to_string(),
                 state,

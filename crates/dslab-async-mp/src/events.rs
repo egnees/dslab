@@ -59,6 +59,6 @@ pub struct ActivityFinished {
 pub struct MessageAck {
     /// Message identifier.
     pub id: u64,
-    /// If messages was delivered on not.
+    /// If messages was delivered or not.
     pub delivered: bool,
 }

@@ -4,8 +4,8 @@ use std::cell::RefCell;
 use std::future::Future;
 use std::rc::Rc;
 
+use dslab_core::async_core::AwaitResult;
 use dslab_core::SimulationContext;
-use futures::{select, FutureExt};
 use rand::Rng;
 use rand_pcg::Pcg64;
 
@@ -23,7 +23,7 @@ pub struct Context {
     clock_skew: f64,
     rng: Rc<RefCell<Box<dyn RandomProvider>>>,
     actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
-    sim_ctx: Rc<RefCell<SimulationContext>>,
+    sim_ctx: SimulationContext,
     net: Rc<RefCell<Network>>,
     storage: Rc<RefCell<Storage>>,
 }
@@ -33,12 +33,12 @@ trait RandomProvider {
 }
 
 struct SimulationRng {
-    sim_ctx: Rc<RefCell<SimulationContext>>,
+    sim_ctx: SimulationContext,
 }
 
 impl RandomProvider for SimulationRng {
     fn rand(&mut self) -> f64 {
-        self.sim_ctx.borrow().rand()
+        self.sim_ctx.rand()
     }
 }
 
@@ -53,7 +53,7 @@ impl Context {
     pub fn from_simulation(
         proc_name: String,
         actions_holder: Rc<RefCell<Vec<ProcessEvent>>>,
-        sim_ctx: Rc<RefCell<SimulationContext>>,
+        sim_ctx: SimulationContext,
         net: Rc<RefCell<Network>>,
         clock_skew: f64,
         storage: Rc<RefCell<Storage>>,
@@ -65,7 +65,7 @@ impl Context {
                 sim_ctx: sim_ctx.clone(),
             }))),
             actions_holder,
-            sim_ctx,
+            sim_ctx: sim_ctx.clone(),
             net,
             storage,
         }
@@ -73,7 +73,7 @@ impl Context {
 
     /// Returns the current time from the local node clock.
     pub fn time(&self) -> f64 {
-        self.sim_ctx.borrow().time() + self.clock_skew
+        self.sim_ctx.time() + self.clock_skew
     }
 
     /// Returns a random float in the range `[0, 1)`.
@@ -116,10 +116,12 @@ impl Context {
         });
 
         let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
+        let (_, ack) = self.sim_ctx.recv_event_by_key::<MessageAck>(event_key).await;
 
-        self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).await;
-
-        Ok(())
+        match ack.delivered {
+            true => Ok(()),
+            false => Err("not delivered".into()),
+        }
     }
 
     /// Sends a message to a process reliable.
@@ -145,17 +147,18 @@ impl Context {
 
         let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
-        select! {
-            (_, ack) = self.sim_ctx.borrow().recv_event_by_key::<MessageAck>(event_key).fuse() => {
-                if ack.delivered {
-                    Ok(())
-                } else {
-                    Err("not delivered".into())
-                }
+        let result = self
+            .sim_ctx
+            .recv_event_by_key::<MessageAck>(event_key)
+            .with_timeout(timeout)
+            .await;
+
+        match result {
+            AwaitResult::Timeout(_) => Err("timeout".into()),
+            AwaitResult::Ok((_, ack)) => match ack.delivered {
+                true => Ok(()),
+                false => Err("not delivered".into()),
             },
-            _ = self.sim_ctx.borrow().sleep(timeout).fuse() => {
-                Err("timeout".into())
-            }
         }
     }
 
@@ -199,14 +202,14 @@ impl Context {
 
     /// Sleep for `duration` seconds.
     pub async fn sleep(&self, duration: f64) {
-        self.sim_ctx.borrow().emit_self_now(SleepStarted {
+        self.sim_ctx.emit_self_now(SleepStarted {
             proc: self.proc_name.clone(),
             duration,
         });
 
-        self.sim_ctx.borrow().sleep(duration).await;
+        self.sim_ctx.sleep(duration).await;
 
-        self.sim_ctx.borrow().emit_self_now(SleepFinished {
+        self.sim_ctx.emit_self_now(SleepFinished {
             proc: self.proc_name.clone(),
         });
     }
@@ -215,16 +218,11 @@ impl Context {
     pub fn spawn(&self, future: impl Future<Output = ()>) {
         // Clone context to not produce multiple borrows.
         let ctx_clone = self.sim_ctx.clone();
-
         let process_name = self.proc_name.clone();
-
-        self.sim_ctx.borrow().spawn(async move {
+        self.sim_ctx.clone().spawn(async move {
             future.await;
-
             // Emit event about async activity ended.
-            ctx_clone
-                .borrow()
-                .emit_self_now(ActivityFinished { proc: process_name });
+            ctx_clone.emit_self_now(ActivityFinished { proc: process_name });
         });
     }
 

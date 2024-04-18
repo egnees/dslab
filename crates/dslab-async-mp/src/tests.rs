@@ -15,7 +15,7 @@ impl Process for ReliableSender {
     fn on_local_message(&mut self, msg: Message, ctx: Context) -> Result<(), String> {
         let pair = self.pair.clone();
         ctx.clone().spawn(async move {
-            _ = ctx.send_reliable(msg, pair).await;
+            ctx.send_reliable_timeout(msg, pair, 20.0).await.unwrap();
         });
 
         Ok(())
@@ -28,6 +28,8 @@ impl Process for ReliableSender {
 
 #[test]
 fn reliable_works() {
+    env_logger::Builder::new().filter_level(log::LevelFilter::Trace).init();
+
     let mut system = System::new(12345);
 
     let sender1 = ReliableSender { pair: "s2".to_owned() };
@@ -161,6 +163,8 @@ impl Process for StorageTester {
 
 #[test]
 fn storage() {
+    env_logger::Builder::new().filter_level(log::LevelFilter::Trace).init();
+
     let mut sys = System::new(12345);
 
     sys.add_node_with_storage("node", 1024 * 1024);

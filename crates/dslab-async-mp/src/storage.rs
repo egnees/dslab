@@ -1,6 +1,6 @@
 //! Definition of filesystem.
 
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
 
 use dslab_core::SimulationContext;
 pub use dslab_storage::{disk::Disk, fs::FileSystem};
@@ -9,7 +9,8 @@ use dslab_storage::{
     storage::Storage as StorageModel,
 };
 
-use futures::{select, FutureExt};
+use futures::{lock::Mutex, select, FutureExt};
+use tokio::sync::RwLock;
 
 /// Represents error during reading.
 #[derive(Debug)]
@@ -62,7 +63,7 @@ pub enum State {
 /// Represents filesystem mounted on the single disk.
 pub struct Storage {
     model: Rc<RefCell<dyn StorageModel>>,
-    files_content: RefCell<HashMap<String, Vec<u8>>>,
+    files: RwLock<HashMap<String, Arc<Mutex<Vec<u8>>>>>,
     ctx: SimulationContext,
     state: State,
 }
@@ -78,7 +79,7 @@ impl Storage {
     pub fn new(disk: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext) -> Self {
         Self {
             model: disk,
-            files_content: RefCell::new(HashMap::new()),
+            files: RwLock::new(HashMap::new()),
             ctx,
             state: State::Available,
         }
@@ -101,7 +102,7 @@ impl Storage {
                 // Data is destroyed on recovery to allow working with it after crash.
 
                 // Delete files.
-                self.files_content = RefCell::new(HashMap::new());
+                self.files.blocking_write().clear();
                 self.state = State::Available;
 
                 // Clear model.
@@ -118,13 +119,14 @@ impl Storage {
         match self.state {
             State::Unavailable => Err(CreateFileError::Unavailable),
             State::Available => {
-                if self.files_content.borrow_mut().contains_key(name) {
+                if self.files.read().await.contains_key(name) {
                     Err(CreateFileError::FileAlreadyExists)
                 } else {
                     let exists = self
-                        .files_content
-                        .borrow_mut()
-                        .insert(name.into(), Vec::new())
+                        .files
+                        .write()
+                        .await
+                        .insert(name.into(), Arc::new(Mutex::new(Vec::new())))
                         .is_some();
                     assert!(!exists);
                     Ok(())
@@ -137,7 +139,8 @@ impl Storage {
     pub async fn delete_file(&self, name: &str) -> Result<(), DeleteFileError> {
         match self.state {
             State::Available => {
-                if let Some(file) = self.files_content.borrow_mut().remove(name) {
+                if let Some(file) = self.files.blocking_write().remove(name) {
+                    let file = file.lock().await;
                     self.model
                         .borrow_mut()
                         .mark_free(file.len().try_into().unwrap())
@@ -168,11 +171,11 @@ impl Storage {
 
         match self.state {
             State::Available => {
-                let files_content = self.files_content.borrow_mut();
+                let files_content = self.files.read().await;
+                let content = files_content.get(file).unwrap().lock().await;
                 if !files_content.contains_key(file) {
                     return Err(ReadError::FileNotFound);
                 }
-                let content = files_content.get(file).unwrap();
                 if offset >= content.len() {
                     return Ok(0);
                 }
@@ -189,13 +192,11 @@ impl Storage {
         match self.state {
             State::Unavailable => Err(ReadError::Unavailable),
             State::Available => {
-                let files_content = self.files_content.borrow_mut();
-
+                let files_content = self.files.read().await;
+                let content = files_content.get(name).unwrap().lock().await;
                 if !files_content.contains_key(name) {
                     return Err(ReadError::FileNotFound);
                 }
-
-                let content = files_content.get(name).unwrap();
 
                 let key = self.model.borrow_mut().read(content.len() as u64, self.ctx.id());
                 select! {
@@ -215,7 +216,8 @@ impl Storage {
         match self.state {
             State::Unavailable => Err(WriteError::Unavailable),
             State::Available => {
-                let mut files_content = self.files_content.borrow_mut();
+                let files_content = self.files.read().await;
+                let mut content = files_content.get(file).unwrap().lock().await;
 
                 if !files_content.contains_key(file) {
                     return Err(WriteError::FileNotFound);
@@ -224,7 +226,6 @@ impl Storage {
                 let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
                 select! {
                     _ = self.ctx.recv_event_by_key::<DataWriteCompleted>(key).fuse() => {
-                        let content = files_content.get_mut(file).unwrap();
                         content.extend_from_slice(data);
                         Ok(())
                     }

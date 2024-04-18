@@ -246,6 +246,11 @@ impl Context {
         self.storage.borrow().read(file, offset, buf).await
     }
 
+    /// Check if file with specified name exists.
+    pub async fn file_exists(&self, name: &str) -> Result<bool, ReadError> {
+        self.storage.borrow().file_exists(name).await
+    }
+
     /// Read file with specified name.
     ///
     /// If there is no such file in the storage, error will be returned.

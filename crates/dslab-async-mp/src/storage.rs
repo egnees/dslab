@@ -187,6 +187,17 @@ impl Storage {
         }
     }
 
+    /// Check if file with specified name exists.
+    pub async fn file_exists(&self, name: &str) -> Result<bool, ReadError> {
+        match self.state {
+            State::Available => {
+                let files_content = self.files.read().await;
+                Ok(files_content.contains_key(name))
+            }
+            State::Unavailable => Err(ReadError::Unavailable),
+        }
+    }
+
     /// Read file content.
     pub async fn read_all(&self, name: &str) -> Result<Vec<u8>, ReadError> {
         match self.state {

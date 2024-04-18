@@ -62,7 +62,7 @@ pub enum State {
 /// Represents filesystem mounted on the single disk.
 pub struct Storage {
     model: Rc<RefCell<dyn StorageModel>>,
-    files_content: HashMap<String, Vec<u8>>,
+    files_content: RefCell<HashMap<String, Vec<u8>>>,
     ctx: SimulationContext,
     state: State,
 }
@@ -78,7 +78,7 @@ impl Storage {
     pub fn new(disk: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext) -> Self {
         Self {
             model: disk,
-            files_content: HashMap::new(),
+            files_content: RefCell::new(HashMap::new()),
             ctx,
             state: State::Available,
         }
@@ -101,7 +101,7 @@ impl Storage {
                 // Data is destroyed on recovery to allow working with it after crash.
 
                 // Delete files.
-                self.files_content = HashMap::new();
+                self.files_content = RefCell::new(HashMap::new());
                 self.state = State::Available;
 
                 // Clear model.
@@ -114,14 +114,18 @@ impl Storage {
     /// Create file with specified name.
     /// If file with such name already exists,
     /// [`CreateFileError::FileAlreadyExists`] will be returned.
-    pub async fn create_file(&mut self, name: &str) -> Result<(), CreateFileError> {
+    pub async fn create_file(&self, name: &str) -> Result<(), CreateFileError> {
         match self.state {
             State::Unavailable => Err(CreateFileError::Unavailable),
             State::Available => {
-                if self.files_content.contains_key(name) {
+                if self.files_content.borrow_mut().contains_key(name) {
                     Err(CreateFileError::FileAlreadyExists)
                 } else {
-                    let exists = self.files_content.insert(name.into(), Vec::new()).is_some();
+                    let exists = self
+                        .files_content
+                        .borrow_mut()
+                        .insert(name.into(), Vec::new())
+                        .is_some();
                     assert!(!exists);
                     Ok(())
                 }
@@ -130,10 +134,10 @@ impl Storage {
     }
 
     /// Delete file with specified name.
-    pub async fn delete_file(&mut self, name: &str) -> Result<(), DeleteFileError> {
+    pub async fn delete_file(&self, name: &str) -> Result<(), DeleteFileError> {
         match self.state {
             State::Available => {
-                if let Some(file) = self.files_content.remove(name) {
+                if let Some(file) = self.files_content.borrow_mut().remove(name) {
                     self.model
                         .borrow_mut()
                         .mark_free(file.len().try_into().unwrap())
@@ -151,7 +155,7 @@ impl Storage {
     ///
     /// # Returns
     /// The number of read bytes.
-    pub async fn read(&mut self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
+    pub async fn read(&self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
         // If the destination buffer length is greater than the maximum allowed buffer size,
         // then panic.
         if buf.len() > MAX_BUFFER_SIZE {
@@ -164,10 +168,11 @@ impl Storage {
 
         match self.state {
             State::Available => {
-                if !self.files_content.contains_key(file) {
+                let files_content = self.files_content.borrow_mut();
+                if !files_content.contains_key(file) {
                     return Err(ReadError::FileNotFound);
                 }
-                let content = self.files_content.get(file).unwrap();
+                let content = files_content.get(file).unwrap();
                 if offset >= content.len() {
                     return Ok(0);
                 }
@@ -180,15 +185,17 @@ impl Storage {
     }
 
     /// Read file content.
-    pub async fn read_all(&mut self, name: &str) -> Result<Vec<u8>, ReadError> {
+    pub async fn read_all(&self, name: &str) -> Result<Vec<u8>, ReadError> {
         match self.state {
             State::Unavailable => Err(ReadError::Unavailable),
             State::Available => {
-                if !self.files_content.contains_key(name) {
+                let files_content = self.files_content.borrow_mut();
+
+                if !files_content.contains_key(name) {
                     return Err(ReadError::FileNotFound);
                 }
 
-                let content = self.files_content.get(name).unwrap();
+                let content = files_content.get(name).unwrap();
 
                 let key = self.model.borrow_mut().read(content.len() as u64, self.ctx.id());
                 select! {
@@ -204,18 +211,20 @@ impl Storage {
     }
 
     /// Append to file.
-    pub async fn append(&mut self, file: &str, data: &[u8]) -> Result<(), WriteError> {
+    pub async fn append(&self, file: &str, data: &[u8]) -> Result<(), WriteError> {
         match self.state {
             State::Unavailable => Err(WriteError::Unavailable),
             State::Available => {
-                if !self.files_content.contains_key(file) {
+                let mut files_content = self.files_content.borrow_mut();
+
+                if !files_content.contains_key(file) {
                     return Err(WriteError::FileNotFound);
                 }
 
                 let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
                 select! {
                     _ = self.ctx.recv_event_by_key::<DataWriteCompleted>(key).fuse() => {
-                        let content = self.files_content.get_mut(file).unwrap();
+                        let content = files_content.get_mut(file).unwrap();
                         content.extend_from_slice(data);
                         Ok(())
                     }

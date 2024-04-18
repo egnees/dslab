@@ -139,7 +139,7 @@ impl Storage {
     pub async fn delete_file(&self, name: &str) -> Result<(), DeleteFileError> {
         match self.state {
             State::Available => {
-                if let Some(file) = self.files.blocking_write().remove(name) {
+                if let Some(file) = self.files.write().await.remove(name) {
                     let file = file.lock().await;
                     self.model
                         .borrow_mut()
@@ -172,10 +172,10 @@ impl Storage {
         match self.state {
             State::Available => {
                 let files_content = self.files.read().await;
-                let content = files_content.get(file).unwrap().lock().await;
                 if !files_content.contains_key(file) {
                     return Err(ReadError::FileNotFound);
                 }
+                let content = files_content.get(file).unwrap().lock().await;
                 if offset >= content.len() {
                     return Ok(0);
                 }
@@ -193,10 +193,10 @@ impl Storage {
             State::Unavailable => Err(ReadError::Unavailable),
             State::Available => {
                 let files_content = self.files.read().await;
-                let content = files_content.get(name).unwrap().lock().await;
                 if !files_content.contains_key(name) {
                     return Err(ReadError::FileNotFound);
                 }
+                let content = files_content.get(name).unwrap().lock().await;
 
                 let key = self.model.borrow_mut().read(content.len() as u64, self.ctx.id());
                 select! {
@@ -217,11 +217,10 @@ impl Storage {
             State::Unavailable => Err(WriteError::Unavailable),
             State::Available => {
                 let files_content = self.files.read().await;
-                let mut content = files_content.get(file).unwrap().lock().await;
-
                 if !files_content.contains_key(file) {
                     return Err(WriteError::FileNotFound);
                 }
+                let mut content = files_content.get(file).unwrap().lock().await;
 
                 let key = self.model.borrow_mut().write(data.len() as u64, self.ctx.id());
                 select! {

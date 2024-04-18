@@ -233,24 +233,24 @@ impl Context {
     /// If there is file with such name already exists,
     /// error will be returned.
     pub async fn create_file(&self, name: &str) -> Result<(), CreateFileError> {
-        self.storage.borrow_mut().create_file(name).await
+        self.storage.borrow().create_file(name).await
     }
 
     /// Delete file with specified name.
     pub async fn delete_file(&self, name: &str) -> Result<(), DeleteFileError> {
-        self.storage.borrow_mut().delete_file(name).await
+        self.storage.borrow().delete_file(name).await
     }
 
     /// Read file from specified offset to the specified buffer.
     pub async fn read(&self, file: &str, offset: usize, buf: &mut [u8]) -> Result<usize, ReadError> {
-        self.storage.borrow_mut().read(file, offset, buf).await
+        self.storage.borrow().read(file, offset, buf).await
     }
 
     /// Read file with specified name.
     ///
     /// If there is no such file in the storage, error will be returned.
     pub async fn read_all(&self, name: &str) -> Result<Vec<u8>, ReadError> {
-        self.storage.borrow_mut().read_all(name).await
+        self.storage.borrow().read_all(name).await
     }
 
     /// Append data to file with specified name.
@@ -258,10 +258,6 @@ impl Context {
     /// If there is no enough space in the storage or file with such name not exists,
     /// error will be returned.
     pub async fn append(&self, name: &str, data: &[u8]) -> Result<(), WriteError> {
-        self.storage.borrow_mut().append(name, data).await
+        self.storage.borrow().append(name, data).await
     }
 }
-
-unsafe impl Send for Context {}
-
-unsafe impl Sync for Context {}

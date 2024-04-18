@@ -413,9 +413,6 @@ impl Network {
 
             self.ctx.emit_as(e.clone(), src_node_id, dst_node_id, msg_delay);
             self.ctx.emit_as(ack, src_node_id, dst_node_id, msg_delay);
-
-            println!("msg_delay is {}, e.id={}", msg_delay, e.id);
-            println!("will be delivered at {}", self.ctx.time() + msg_delay);
         }
 
         self.network_message_count += 1;

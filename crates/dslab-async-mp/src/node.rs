@@ -10,7 +10,7 @@ use dslab_core::{cast, Event, EventHandler, Id, SimulationContext};
 use sugars::{rc, refcell};
 
 use crate::context::Context;
-use crate::events::{ActivityFinished, MessageAck, MessageReceived, SleepFinished, SleepStarted, TimerFired};
+use crate::events::{ActivityFinished, MessageReceived, SleepFinished, SleepStarted, TimerFired};
 use crate::logger::{LogEntry, Logger};
 use crate::message::Message;
 use crate::network::Network;

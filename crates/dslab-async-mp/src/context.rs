@@ -4,7 +4,6 @@ use std::cell::RefCell;
 use std::future::Future;
 use std::rc::Rc;
 
-use dslab_core::async_core::AwaitResult;
 use dslab_core::SimulationContext;
 use futures::{select, FutureExt};
 use rand::Rng;
@@ -155,9 +154,6 @@ impl Context {
                 }
             },
             _ = self.sim_ctx.borrow().sleep(timeout).fuse() => {
-                println!("timeout is {}", timeout);
-                println!("simulation time is {}", self.time());
-
                 Err("timeout".into())
             }
         }

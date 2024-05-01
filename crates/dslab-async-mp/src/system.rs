@@ -19,7 +19,7 @@ use crate::message::Message;
 use crate::network::Network;
 use crate::node::{EventLogEntry, Node};
 use crate::process::Process;
-use crate::storage::Storage;
+use crate::storage::file_manager::FileManager;
 
 /// Models distributed system consisting of multiple nodes connected via network.
 pub struct System {
@@ -98,7 +98,6 @@ impl System {
     /// Adds a not to the system with specified storage params.
     pub fn add_node_with_storage(&mut self, name: &str, capacity: usize) {
         let node_ctx = self.sim.create_context(name);
-        node_ctx.register_key_getter_for::<MessageAck>(|e| e.id);
 
         // Create storage.
         let storage = {

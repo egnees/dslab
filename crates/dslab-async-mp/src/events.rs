@@ -55,7 +55,7 @@ pub struct ActivityFinished {
 
 /// Previously sent message is delivered or else.
 /// Event is returned to the process who waits for the ack on sent message.
-#[derive(Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct MessageAck {
     /// Message identifier.
     pub id: u64,

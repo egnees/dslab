@@ -388,7 +388,7 @@ impl Network {
             id: msg_id,
             delivered: !msg_dropped,
         };
-        let event_key = ack.id as EventKey;
+        let event_key = msg_id as EventKey;
 
         if msg_dropped {
             let delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);

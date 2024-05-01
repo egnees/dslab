@@ -147,6 +147,12 @@ impl Context {
 
         let event_key = self.net.borrow_mut().send_with_ack(msg, &self.proc_name, &dst);
 
+        println!("ctx: {}", self.sim_ctx.name());
+
+        self.sim_ctx.spawn(async move {
+            let (_, ack) = self.sim_ctx.recv_event_by_key::<MessageAck>(event_key).await;
+        });
+
         let result = self
             .sim_ctx
             .recv_event_by_key::<MessageAck>(event_key)

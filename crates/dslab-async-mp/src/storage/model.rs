@@ -1,0 +1,78 @@
+pub use dslab_storage::storage::Storage as StorageModel;
+
+use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
+
+use dslab_core::{Id, SimulationContext};
+
+use super::event::StorageCrashedRequestInterrupt;
+
+/// Represents state of the storage with associated model.
+pub struct ModelWrapper {
+    available: bool,
+    model: Rc<RefCell<dyn StorageModel>>,
+    ctx: SimulationContext,
+    requests_registry: BTreeSet<u64>,
+    owner: Id,
+}
+
+impl ModelWrapper {
+    pub fn new(model: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext, owner: Id) -> Self {
+        Self {
+            available: true,
+            model,
+            ctx,
+            requests_registry: BTreeSet::new(),
+            owner,
+        }
+    }
+
+    pub fn crash(&mut self) {
+        assert!(self.available, "trying to crash not available storage");
+        self.ctx.cancel_events(|e| e.src == self.ctx.id()); // cancel all future events from storage.
+        for request_id in self.requests_registry.iter() {
+            self.ctx.emit_now(
+                StorageCrashedRequestInterrupt {
+                    request_id: *request_id,
+                },
+                self.owner,
+            );
+        }
+        self.requests_registry.clear();
+        self.available = false;
+    }
+
+    pub fn recover(&mut self) {
+        assert!(!self.available, "trying to recover not crashed storage");
+        let used_space = self.model.borrow().used_space();
+        self.model.borrow_mut().mark_free(used_space).unwrap();
+        self.available = true;
+    }
+
+    pub fn is_available(&self) -> bool {
+        self.available
+    }
+
+    pub fn read(&mut self, bytes: u64) -> u64 {
+        let request_id = self.model.borrow_mut().read(bytes, self.owner);
+        self.register_request(request_id);
+        request_id
+    }
+
+    pub fn write(&mut self, bytes: u64) -> u64 {
+        let request_id = self.model.borrow_mut().write(bytes, self.owner);
+        self.register_request(request_id);
+        request_id
+    }
+
+    pub fn free_space(&self) -> u64 {
+        self.model.borrow().free_space()
+    }
+
+    fn register_request(&mut self, request_id: u64) {
+        self.requests_registry.insert(request_id);
+    }
+
+    pub fn mark_request_as_processed(&mut self, request_id: u64) {
+        self.requests_registry.remove(&request_id);
+    }
+}

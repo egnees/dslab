@@ -111,9 +111,8 @@ fn concurrent_file_access() {
                 .map(|name| manager.borrow_mut().open_file(&name).unwrap())
                 .collect::<Vec<File>>();
             files.shuffle(&mut Seeder::from(user).make_rng::<Pcg64>());
-            let user = format!("user_{}", user);
             for mut file in files.into_iter() {
-                let content = format!("content_from_{}\n", user);
+                let content = format!("content_from_user_{}\n", user);
                 let append_bytes = file.append(content.as_bytes()).await.unwrap();
                 assert_eq!(append_bytes, content.len() as u64);
             }

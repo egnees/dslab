@@ -8,12 +8,15 @@
 // pub mod network;
 // pub mod node;
 // pub mod process;
-pub mod storage;
 // pub mod system;
 // pub mod test;
-// mod util;
 pub mod log;
+pub mod network;
+pub mod node;
 pub mod process;
+pub mod storage;
+pub mod system;
+pub mod utils;
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;

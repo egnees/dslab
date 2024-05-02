@@ -2,7 +2,7 @@
 
 use dslab_core::Id;
 
-use crate::{log::util::t, process::message::Message};
+use crate::{log::util::t, network::message::Message};
 
 use serde::Serialize;
 

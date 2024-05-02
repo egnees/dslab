@@ -4,7 +4,7 @@ pub mod logger;
 mod util;
 
 #[cfg(test)]
-mod play;
-
-#[cfg(test)]
 mod tests;
+
+// #[cfg(test)]
+// mod play;

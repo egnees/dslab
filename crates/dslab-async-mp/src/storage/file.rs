@@ -16,8 +16,11 @@ use super::{
 
 /// Represents file on disk.
 pub struct File {
+    /// Represents wrapper for storage.
     pub storage_wrapper: Rc<RefCell<ModelWrapper>>,
+    /// Represents shared content of the file.
     pub content: SharedFileContent,
+    /// Represents context of the owner node.
     pub ctx: SimulationContext,
 }
 

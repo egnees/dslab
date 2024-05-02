@@ -1,4 +1,4 @@
-//! Network implementation.
+//! Network model implementation.
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -8,13 +8,14 @@ use dslab_core::async_core::EventKey;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use dslab_core::event::EventId;
-use dslab_core::Id;
-use dslab_core::SimulationContext;
+use dslab_core::{Event, SimulationContext};
+use dslab_core::{EventHandler, Id};
 
-use crate::events::{MessageAck, MessageReceived};
-use crate::logger::*;
-use crate::message::Message;
+use crate::log::log_entry::LogEntry;
+use crate::log::logger::Logger;
+
+use super::event::{MessageDelivered, MessageDropped};
+use super::message::Message;
 
 /// Represents a network that transmits messages between processes located on different nodes.
 pub struct Network {
@@ -29,10 +30,10 @@ pub struct Network {
     drop_outgoing: HashSet<String>,
     disabled_links: HashSet<(String, String)>,
     network_message_count: u64,
-    message_count: u64,
     traffic: u64,
     ctx: SimulationContext,
     logger: Rc<RefCell<Logger>>,
+    next_event_id: u64,
 }
 
 impl Network {
@@ -49,11 +50,16 @@ impl Network {
             drop_outgoing: HashSet::new(),
             disabled_links: HashSet::new(),
             network_message_count: 0,
-            message_count: 0,
             traffic: 0,
             ctx,
             logger,
+            next_event_id: 0,
         }
+    }
+
+    /// Returns id of the network component in the simulation.
+    pub fn id(&self) -> Id {
+        self.ctx.id()
     }
 
     /// Adds a new node to the network.
@@ -288,129 +294,95 @@ impl Network {
         }
     }
 
+    fn next_msg_event(&mut self, src_proc: String, dst_proc: String, msg: Message) -> MessageDelivered {
+        let src_node = self.proc_locations.get(&src_proc).unwrap().clone();
+        let dst_node = self.proc_locations.get(&dst_proc).unwrap().clone();
+        let event_id = self.next_event_id;
+
+        self.next_event_id += 1;
+
+        MessageDelivered {
+            msg_id: event_id,
+            msg,
+            src_proc,
+            src_node,
+            dst_proc,
+            dst_node,
+        }
+    }
+
     /// Sends a message between two processes.
-    pub(crate) fn send_message(&mut self, msg: Message, src: &str, dst: &str) {
+    pub(crate) fn send_message(&mut self, msg: Message, src_proc: &str, dst_proc: &str) {
         let msg_size = msg.size();
-        let src_node = self.proc_locations.get(src).unwrap();
-        let dst_node = self.proc_locations.get(dst).unwrap();
-        let src_node_id = *self.node_ids.get(src_node).unwrap();
-        let dst_node_id = *self.node_ids.get(dst_node).unwrap();
+        let mut potential_event = self.next_msg_event(src_proc.to_owned(), dst_proc.to_owned(), msg);
+        let src_node_id = *self.node_ids.get(&potential_event.src_node).unwrap();
+        let dst_node_id = *self.node_ids.get(&potential_event.dst_node).unwrap();
 
-        let msg_id = self.message_count;
-        self.message_count += 1;
-
-        self.log_message_sent(
-            msg_id,
-            src_node.to_string(),
-            src.to_string(),
-            dst_node.to_string(),
-            dst.to_string(),
-            msg.clone(),
-        );
+        self.log_message_sent(&potential_event);
 
         // local communication inside a node is reliable and fast
-        if src_node == dst_node {
-            let e = MessageReceived {
-                id: self.message_count,
-                msg,
-                src: src.to_string(),
-                src_node: src_node.to_string(),
-                dst: dst.to_string(),
-                dst_node: dst_node.to_string(),
-            };
-            self.ctx.emit_as(e, src_node_id, dst_node_id, 0.);
-        // communication between different nodes can be faulty
+        if potential_event.src_node == potential_event.dst_node {
+            self.ctx.emit_as(potential_event, src_node_id, dst_node_id, 0.);
+            // communication between different nodes can be faulty
         } else {
-            if !self.message_is_dropped(src_node, dst_node) {
-                let msg = self.corrupt_if_needed(msg);
-                let e = MessageReceived {
-                    id: self.message_count,
-                    msg,
-                    src: src.to_string(),
-                    src_node: src_node.to_string(),
-                    dst: dst.to_string(),
-                    dst_node: dst_node.to_string(),
-                };
+            if !self.message_is_dropped(&potential_event.src_node, &potential_event.dst_node) {
+                potential_event.msg = self.corrupt_if_needed(potential_event.msg);
                 let msg_count = self.get_message_count();
                 if msg_count == 1 {
                     let delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
-                    self.ctx.emit_as(e, src_node_id, dst_node_id, delay);
+                    self.ctx.emit_as(potential_event, src_node_id, dst_node_id, delay);
                 } else {
                     for _ in 0..msg_count {
                         let delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
-                        self.ctx.emit_as(e.clone(), src_node_id, dst_node_id, delay);
+                        self.ctx
+                            .emit_as(potential_event.clone(), src_node_id, dst_node_id, delay);
                     }
                 }
             } else {
-                self.logger.borrow_mut().log(LogEntry::MessageDropped {
-                    time: self.ctx.time(),
-                    msg_id: msg_id.to_string(),
-                    src_proc: src.to_string(),
-                    src_node: src_node.to_string(),
-                    dst_proc: dst.to_string(),
-                    dst_node: dst_node.to_string(),
-                    msg,
-                });
+                self.log_message_dropped(&potential_event.into());
             }
+
             self.network_message_count += 1;
             self.traffic += msg_size as u64;
         }
     }
 
     /// Reliable send message between two processes.
-    /// It is guaranteed that message will be delivered exactly once and wont be corrupted.
+    /// It is guaranteed that message will be delivered exactly once and will not be corrupted.
     /// If two processes are not connected by the network, then error will be returned.
-    pub(crate) fn send_with_ack(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
+    pub(crate) fn send_message_with_ack(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
         let msg_size = msg.size();
-        let src_node = self.proc_locations.get(src).unwrap();
-        let dst_node = self.proc_locations.get(dst).unwrap();
-        let src_node_id = *self.node_ids.get(src_node).unwrap();
-        let dst_node_id = *self.node_ids.get(dst_node).unwrap();
+        let potential_event = self.next_msg_event(src.to_owned(), dst.to_owned(), msg);
+        let event_key = potential_event.msg_id as EventKey;
+        let src_node_id = *self.node_ids.get(&potential_event.src_node).unwrap();
+        let dst_node_id = *self.node_ids.get(&potential_event.dst_node).unwrap();
 
-        let msg_id = self.message_count;
-        self.message_count += 1;
+        self.log_message_sent(&potential_event);
 
-        self.log_message_sent(
-            msg_id,
-            src_node.to_string(),
-            src.to_string(),
-            dst_node.to_string(),
-            dst.to_string(),
-            msg.clone(),
-        );
-
-        let msg_dropped = src_node != dst_node
-            && (self.drop_outgoing.contains(src)
-                || self.drop_incoming.contains(dst)
-                || self.disabled_links.contains(&(src_node.clone(), dst_node.clone())));
-
-        let ack = MessageAck {
-            id: msg_id,
-            delivered: !msg_dropped,
-        };
-        let event_key = msg_id as EventKey;
+        let msg_dropped = src_node_id != dst_node_id
+            && (self.drop_outgoing.contains(&potential_event.src_node)
+                || self.drop_incoming.contains(&potential_event.dst_node)
+                || self
+                    .disabled_links
+                    .contains(&(potential_event.src_node.clone(), potential_event.dst_node.clone())));
 
         if msg_dropped {
             let delay = self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay);
-            self.ctx.emit_as(ack, src_node_id, dst_node_id, delay);
-        } else {
-            let e = MessageReceived {
-                id: msg_id,
-                msg,
-                src: src.to_string(),
-                src_node: src_node.to_string(),
-                dst: dst.to_string(),
-                dst_node: dst_node.to_string(),
-            };
+            let event: MessageDropped = potential_event.into();
 
+            self.log_message_dropped(&event);
+
+            self.ctx.emit_as(event, self.ctx.id(), src_node_id, delay);
+        } else {
             let msg_delay = if src_node_id == dst_node_id {
                 0.
             } else {
-                self.min_delay + self.ctx.rand() * (self.max_delay - self.min_delay)
+                self.min_delay + 2.0 * self.ctx.rand() * (self.max_delay - self.min_delay)
             };
 
-            self.ctx.emit_as(e, src_node_id, dst_node_id, msg_delay);
-            self.ctx.emit_as(ack, src_node_id, dst_node_id, msg_delay);
+            self.ctx
+                .emit_as(potential_event.clone(), self.ctx.id(), src_node_id, msg_delay);
+            self.ctx.emit_as(potential_event, src_node_id, dst_node_id, msg_delay);
         }
 
         self.network_message_count += 1;
@@ -419,23 +391,33 @@ impl Network {
         event_key
     }
 
-    fn log_message_sent(
-        &self,
-        msg_id: EventId,
-        src_node: String,
-        src_proc: String,
-        dst_node: String,
-        dst_proc: String,
-        msg: Message,
-    ) {
+    fn log_message_sent(&self, potential_event: &MessageDelivered) {
         self.logger.borrow_mut().log(LogEntry::MessageSent {
             time: self.ctx.time(),
-            msg_id: msg_id.to_string(),
-            src_node,
-            src_proc,
-            dst_node,
-            dst_proc,
-            msg,
+            msg_id: potential_event.msg_id.to_string(),
+            src_node: potential_event.src_node.clone(),
+            src_proc: potential_event.src_proc.clone(),
+            dst_node: potential_event.dst_node.clone(),
+            dst_proc: potential_event.dst_proc.clone(),
+            msg: potential_event.msg.clone(),
         });
+    }
+
+    fn log_message_dropped(&self, potential_event: &MessageDropped) {
+        self.logger.borrow_mut().log(LogEntry::MessageDropped {
+            time: self.ctx.time(),
+            msg_id: potential_event.msg_id.to_string(),
+            src_node: potential_event.src_node.clone(),
+            src_proc: potential_event.src_proc.clone(),
+            dst_node: potential_event.dst_node.clone(),
+            dst_proc: potential_event.dst_proc.clone(),
+            msg: potential_event.msg.clone(),
+        })
+    }
+}
+
+impl EventHandler for Network {
+    fn on(&mut self, event: Event) {
+        // do nothing
     }
 }

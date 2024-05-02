@@ -1,19 +1,15 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rand::seq::SliceRandom;
-use rand::thread_rng;
 use rand_pcg::Pcg64;
-use rand_seeder::{Seeder, SipHasher};
+use rand_seeder::Seeder;
 
-use dslab_core::{async_core::EventKey, Event, EventHandler, Simulation, SimulationContext};
-use dslab_storage::{
-    disk::{self, DiskBuilder},
-    events::{DataReadCompleted, DataReadFailed, DataWriteCompleted, DataWriteFailed},
-};
+use dslab_core::{Event, EventHandler, Simulation};
+use dslab_storage::disk::DiskBuilder;
 
 use crate::storage::result::StorageError;
 
-use super::{file::File, file_manager::FileManager, model::ModelWrapper, register::register_key_getters};
+use super::{file::File, file_manager::FileManager, register::register_storage_key_getters};
 
 /// Represents stub for file manager.
 impl EventHandler for FileManager {
@@ -32,10 +28,10 @@ fn build_simulation() -> (Simulation, Rc<RefCell<FileManager>>) {
     sim.add_handler("disk", disk.clone());
 
     let file_manager_ctx = sim.create_context("file_manager");
-    let file_manager = Rc::new(RefCell::new(FileManager::new(disk, disk_ctx, file_manager_ctx)));
+    let file_manager = Rc::new(RefCell::new(FileManager::new(disk, file_manager_ctx)));
     sim.add_handler("file_manager", file_manager.clone());
 
-    register_key_getters(&mut sim);
+    register_storage_key_getters(&mut sim);
 
     (sim, file_manager)
 }

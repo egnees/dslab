@@ -1,4 +1,4 @@
-use crate::{
+use dslab_async_mp::{
     network::message::Message,
     process::{context::Context, process::Process},
     system::System,

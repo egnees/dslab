@@ -5,21 +5,22 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use dslab_core::async_core::EventKey;
 use dslab_core::handler::EventCancellationPolicy;
 use dslab_storage::disk::DiskBuilder;
-use dslab_storage::events::{DataReadCompleted, DataReadFailed, DataWriteCompleted, DataWriteFailed};
+use dslab_storage::events::{DataReadCompleted, DataWriteCompleted};
 use rand::distributions::uniform::{SampleRange, SampleUniform};
 
 use dslab_core::{cast, Simulation};
 
-use crate::events::{MessageAck, MessageReceived};
-use crate::logger::{LogEntry, Logger};
-use crate::message::Message;
-use crate::network::Network;
-use crate::node::{EventLogEntry, Node};
-use crate::process::Process;
-use crate::storage::file_manager::FileManager;
+use crate::log::log_entry::LogEntry;
+use crate::log::logger::Logger;
+use crate::network::event::{MessageDelivered, MessageDropped};
+use crate::network::message::Message;
+use crate::network::model::Network;
+use crate::network::register::register_network_key_getters;
+use crate::node::component::Node;
+use crate::process::process::Process;
+use crate::storage::register::register_storage_key_getters;
 
 /// Models distributed system consisting of multiple nodes connected via network.
 pub struct System {
@@ -34,32 +35,25 @@ impl System {
     /// Creates a system with specified random seed.
     pub fn new(seed: u64) -> Self {
         let logger = Rc::new(RefCell::new(Logger::new()));
-        let mut sim = Simulation::new(seed);
-        let net = Rc::new(RefCell::new(Network::new(sim.create_context("net"), logger.clone())));
-
-        // Network.
-        sim.register_key_getter_for::<MessageAck>(|e| e.id as EventKey);
-
-        // Storage.
-        sim.register_key_getter_for::<DataReadCompleted>(|d| d.request_id as EventKey);
-        sim.register_key_getter_for::<DataReadFailed>(|d| d.request_id as EventKey);
-        sim.register_key_getter_for::<DataWriteCompleted>(|d| d.request_id as EventKey);
-        sim.register_key_getter_for::<DataWriteFailed>(|d| d.request_id as EventKey);
-
-        Self {
-            sim,
-            net,
-            nodes: HashMap::new(),
-            proc_nodes: HashMap::new(),
-            logger,
-        }
+        Self::with_logger(seed, logger)
     }
 
     /// Creates a system with logging events to file.
     pub fn with_log_file(seed: u64, log_path: &Path) -> Self {
         let logger = Rc::new(RefCell::new(Logger::with_log_file(log_path)));
+        Self::with_logger(seed, logger)
+    }
+
+    fn with_logger(seed: u64, logger: Rc<RefCell<Logger>>) -> Self {
         let mut sim = Simulation::new(seed);
         let net = Rc::new(RefCell::new(Network::new(sim.create_context("net"), logger.clone())));
+
+        // network
+        register_network_key_getters(&mut sim);
+
+        // storage
+        register_storage_key_getters(&mut sim);
+
         Self {
             sim,
             net,
@@ -100,7 +94,7 @@ impl System {
         let node_ctx = self.sim.create_context(name);
 
         // Create storage.
-        let storage = {
+        let storage_model = {
             let mb = 1024 * 1024;
 
             let read_bw: f64 = 300.0 * (mb as f64); // 300 Mb/s
@@ -112,17 +106,16 @@ impl System {
             let disk = Rc::new(RefCell::new(disk));
             self.sim.add_handler(&disk_name, disk.clone());
 
-            let storage = Storage::new(disk, node_ctx.clone());
-            Rc::new(RefCell::new(storage))
+            disk
         };
 
         // Create node with storage.
         let node = Rc::new(RefCell::new(Node::new(
             name.to_string(),
-            self.net.clone(),
             node_ctx.clone(),
+            self.net.clone(),
             self.logger.clone(),
-            storage,
+            storage_model,
         )));
         let node_id = self.sim.add_handler(name, node.clone());
 
@@ -145,6 +138,72 @@ impl System {
         self.nodes[node].borrow_mut().set_clock_skew(clock_skew);
     }
 
+    fn discard_node_events(&mut self, node_name: &str) {
+        let node_id = self.sim.lookup_id(node_name);
+        let cancelled = self.sim.cancel_and_get_events(|e| e.src == node_id || e.dst == node_id);
+
+        for event in cancelled {
+            cast!(match event.data {
+                MessageDelivered {
+                    msg_id,
+                    msg,
+                    src_proc,
+                    src_node,
+                    dst_proc,
+                    dst_node,
+                } => {
+                    self.logger.borrow_mut().log(LogEntry::MessageDropped {
+                        time: self.sim.time(),
+                        msg_id: msg_id.to_string(),
+                        msg,
+                        src_proc,
+                        src_node,
+                        dst_proc,
+                        dst_node,
+                    });
+                }
+                MessageDropped {
+                    msg_id,
+                    msg,
+                    src_proc,
+                    src_node,
+                    dst_proc,
+                    dst_node,
+                } => {
+                    self.logger.borrow_mut().log(LogEntry::MessageDropped {
+                        time: self.sim.time(),
+                        msg_id: msg_id.to_string(),
+                        msg,
+                        src_proc,
+                        src_node,
+                        dst_proc,
+                        dst_node,
+                    });
+                }
+                DataReadCompleted { request_id, size } => {
+                    self.logger.borrow_mut().log(LogEntry::ReadRequestFailed {
+                        time: self.sim.time(),
+                        node: node_name.to_owned(),
+                        request_id,
+                        file_name: "???".to_owned(),
+                        reason: "node crashed".to_owned(),
+                        bytes: size,
+                    });
+                }
+                DataWriteCompleted { request_id, size } => {
+                    self.logger.borrow_mut().log(LogEntry::WriteRequestFailed {
+                        time: self.sim.time(),
+                        node: node_name.to_owned(),
+                        request_id,
+                        file_name: "???".to_owned(),
+                        reason: "node crashed".to_owned(),
+                        bytes: size,
+                    });
+                }
+            })
+        }
+    }
+
     /// Crashes the specified node with storage.
     ///
     /// All pending events created by the node will be discarded.
@@ -154,42 +213,18 @@ impl System {
     /// Processes running on the node are not cleared to allow working
     /// with processes after the crash (i.e. examine event log).
     pub fn crash_node(&mut self, node_name: &str) {
+        self.discard_node_events(node_name);
+
         let node = self.nodes.get(node_name).unwrap();
         node.borrow_mut().crash();
+
+        // remove the handler to discard all pending and future events sent to this node
+        self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
 
         self.logger.borrow_mut().log(LogEntry::NodeCrashed {
             time: self.sim.time(),
             node: node_name.to_string(),
         });
-
-        // cancel pending events (i.e. undelivered messages) from the crashed node
-        let node_id = self.sim.lookup_id(node_name);
-        let cancelled = self.sim.cancel_and_get_events(|e| e.src == node_id);
-        for event in cancelled {
-            cast!(match event.data {
-                MessageReceived {
-                    id,
-                    msg,
-                    src,
-                    src_node,
-                    dst,
-                    dst_node,
-                } => {
-                    self.logger.borrow_mut().log(LogEntry::MessageDropped {
-                        time: self.sim.time(),
-                        msg_id: id.to_string(),
-                        msg,
-                        src_proc: src,
-                        src_node,
-                        dst_proc: dst,
-                        dst_node,
-                    });
-                }
-            })
-        }
-
-        // remove the handler to discard all pending and future events sent to this node
-        self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
     }
 
     /// Recovers the previously crashed node and storage.
@@ -207,7 +242,7 @@ impl System {
         self.sim.add_handler(node_name, node.clone());
 
         // remove previous process-node mappings to enable recreating these processes
-        self.proc_nodes.retain(|_, node| node.borrow().name != node_name);
+        self.proc_nodes.retain(|_, node| node.borrow().name() != node_name);
 
         self.logger.borrow_mut().log(LogEntry::NodeRecovered {
             time: self.sim.time(),
@@ -224,42 +259,18 @@ impl System {
     /// Processes running on the node are not cleared to allow working
     /// with processes after the crash (i.e. examine event log).
     pub fn shutdown_node(&mut self, node_name: &str) {
+        self.discard_node_events(node_name);
+
         let node = self.nodes.get(node_name).unwrap();
         node.borrow_mut().shutdown();
 
-        self.logger.borrow_mut().log(LogEntry::NodeCrashed {
+        // remove the handler to discard all pending and future events sent to this node
+        self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
+
+        self.logger.borrow_mut().log(LogEntry::NodeShutdown {
             time: self.sim.time(),
             node: node_name.to_string(),
         });
-
-        // cancel pending events (i.e. undelivered messages) from the crashed node
-        let node_id = self.sim.lookup_id(node_name);
-        let cancelled = self.sim.cancel_and_get_events(|e| e.src == node_id);
-        for event in cancelled {
-            cast!(match event.data {
-                MessageReceived {
-                    id,
-                    msg,
-                    src,
-                    src_node,
-                    dst,
-                    dst_node,
-                } => {
-                    self.logger.borrow_mut().log(LogEntry::MessageDropped {
-                        time: self.sim.time(),
-                        msg_id: id.to_string(),
-                        msg,
-                        src_proc: src,
-                        src_node,
-                        dst_proc: dst,
-                        dst_node,
-                    });
-                }
-            })
-        }
-
-        // remove the handler to discard all pending and future events sent to this node
-        self.sim.remove_handler(node_name, EventCancellationPolicy::Incoming);
     }
 
     /// Runs the previously shut node.
@@ -277,9 +288,9 @@ impl System {
         self.sim.add_handler(node_name, node.clone());
 
         // remove previous process-node mappings to enable recreating these processes
-        self.proc_nodes.retain(|_, node| node.borrow().name != node_name);
+        self.proc_nodes.retain(|_, node| node.borrow().name() != node_name);
 
-        self.logger.borrow_mut().log(LogEntry::NodeRecovered {
+        self.logger.borrow_mut().log(LogEntry::NodeReran {
             time: self.sim.time(),
             node: node_name.to_string(),
         });
@@ -341,17 +352,14 @@ impl System {
             !node.is_crashed(),
             "Cannot send local message to process {} on crashed node {}",
             proc,
-            node.name
+            node.name()
         );
         node.send_local_message(proc.to_string(), msg);
     }
 
     /// Reads and returns the local messages produced by the process.
-    pub fn read_local_messages(&mut self, proc: &str) -> Vec<Message> {
-        self.proc_nodes[proc]
-            .borrow_mut()
-            .read_local_messages(proc)
-            .unwrap_or_default()
+    pub fn read_local_messages(&mut self, proc: &str) -> Option<Vec<Message>> {
+        self.proc_nodes[proc].borrow_mut().read_local_messages(proc)
     }
 
     /// Returns a copy of the local messages produced by the process.
@@ -359,16 +367,6 @@ impl System {
     /// In contrast to [`Self::read_local_messages`], this method does not drain the process outbox.
     pub fn local_outbox(&self, proc: &str) -> Vec<Message> {
         self.proc_nodes[proc].borrow().local_outbox(proc)
-    }
-
-    /// Returns the event log for the process.
-    pub fn event_log(&self, proc: &str) -> Vec<EventLogEntry> {
-        self.proc_nodes[proc].borrow().event_log(proc)
-    }
-
-    /// Returns the maximum size of process inner data observed so far.
-    pub fn max_size(&mut self, proc: &str) -> u64 {
-        self.proc_nodes[proc].borrow_mut().max_size(proc)
     }
 
     /// Returns the number of messages sent by the process.

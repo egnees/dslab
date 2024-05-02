@@ -2,30 +2,33 @@
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use dslab_core::{Id, SimulationContext};
+use dslab_core::SimulationContext;
 pub use dslab_storage::storage::Storage;
 use dslab_storage::storage::Storage as StorageModel;
 
 use super::{
-    event::StorageCrashedRequestInterrupt,
     file::File,
     model::ModelWrapper,
     result::{StorageError, StorageResult},
 };
 
+/// Represents content of file shared between [`files`][`File`].
 pub type SharedFileContent = Rc<RefCell<Vec<u8>>>;
 
 /// Represents file manager, which is responsible for creating and opening files.
 pub struct FileManager {
+    /// Content of files stored here.
     pub files_content: HashMap<String, SharedFileContent>,
+    /// Context of the owner node.
     pub ctx: SimulationContext,
+    /// Wrapper of storage model.
     pub storage_wrapper: Rc<RefCell<ModelWrapper>>,
 }
 
 impl FileManager {
     /// Creates a new storage.
-    pub fn new(model: Rc<RefCell<dyn StorageModel>>, model_ctx: SimulationContext, ctx: SimulationContext) -> Self {
-        let model_wrapper = ModelWrapper::new(model, model_ctx, ctx.id());
+    pub fn new(model: Rc<RefCell<dyn StorageModel>>, ctx: SimulationContext) -> Self {
+        let model_wrapper = ModelWrapper::new(model, ctx.clone());
         Self {
             files_content: HashMap::new(),
             ctx,

@@ -17,6 +17,3 @@ pub mod process;
 pub mod storage;
 pub mod system;
 pub mod utils;
-
-#[cfg(test)]
-mod tests;

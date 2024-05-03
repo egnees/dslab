@@ -103,7 +103,7 @@ impl Context {
     /// Send local message.
     pub fn send_local(&self, msg: Message) {
         self.commons.borrow_mut().send_local_messages_count += 1;
-        self.commons.borrow().local_messages.borrow_mut().push(msg);
+        self.commons.borrow_mut().local_messages.push(msg);
     }
 
     /// Sets a timer with overriding delay of existing active timer.

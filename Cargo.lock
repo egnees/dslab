@@ -2287,21 +2287,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
 
 [[package]]
-name = "mp-async-sleep"
-version = "0.1.0"
-dependencies = [
- "clap 3.2.25",
- "dslab-async-mp",
- "env_logger 0.9.3",
- "log 0.4.21",
- "rand 0.8.5",
- "rand_pcg 0.3.1",
- "serde",
- "serde_json",
- "sugars",
-]
-
-[[package]]
 name = "mp-broadcast"
 version = "0.1.0"
 dependencies = [

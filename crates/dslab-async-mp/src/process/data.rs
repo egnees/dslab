@@ -15,9 +15,7 @@ pub struct ProcessData {
     /// Pending timers (name -> simulation id).
     pub pending_timers: HashMap<String, EventId>,
     /// Local messages.
-    pub local_messages: Rc<RefCell<Vec<Message>>>,
-    /// Control block for interaction with simulation.
-    pub control_block: Rc<RefCell<ControlBlock>>,
+    pub local_messages: Vec<Message>,
     /// Send messages count.
     pub send_message_cnt: u64,
     /// Received messages count.
@@ -26,6 +24,8 @@ pub struct ProcessData {
     pub received_local_messages_count: u64,
     /// Total number of sent local messages.
     pub send_local_messages_count: u64,
+    /// Control block for interaction with simulation.
+    pub control_block: Rc<RefCell<ControlBlock>>,
 }
 
 impl ProcessData {
@@ -33,12 +33,12 @@ impl ProcessData {
         Self {
             process_name,
             pending_timers: HashMap::new(),
-            local_messages: Rc::new(RefCell::new(Vec::new())),
-            control_block,
+            local_messages: Vec::new(),
             send_message_cnt: 0,
             received_message_cnt: 0,
             received_local_messages_count: 0,
             send_local_messages_count: 0,
+            control_block,
         }
     }
 }

@@ -200,13 +200,12 @@ impl Node {
     /// Returns `None` if there are no messages.   
     pub fn read_local_messages(&mut self, proc: &str) -> Option<Vec<Message>> {
         let proc_data = self.processes.get_mut(proc).unwrap().data.clone();
-        let proc_data = proc_data.borrow();
-        let mut local_messages = proc_data.local_messages.borrow_mut();
-        if local_messages.is_empty() {
+        let mut proc_data = proc_data.borrow_mut();
+        if proc_data.local_messages.is_empty() {
             None
         } else {
-            let len = local_messages.len();
-            Some(local_messages.drain(0..len).collect())
+            let len = proc_data.local_messages.len();
+            Some(proc_data.local_messages.drain(0..len).collect())
         }
     }
 
@@ -214,14 +213,7 @@ impl Node {
     ///
     /// In contrast to [`Self::read_local_messages`], this method does not drain the process outbox.
     pub fn local_outbox(&self, proc: &str) -> Vec<Message> {
-        self.processes
-            .get(proc)
-            .unwrap()
-            .data
-            .borrow()
-            .local_messages
-            .borrow()
-            .clone()
+        self.processes.get(proc).unwrap().data.borrow().local_messages.clone()
     }
 
     /// Returns the number of messages sent by the process.

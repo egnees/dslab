@@ -157,17 +157,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46016233fc1bb55c23b856fe556b7db6ccd05119a0a392e04f0b3b7c79058f16"
 
 [[package]]
-name = "async-core-tests"
-version = "0.1.0"
-dependencies = [
- "dslab-core",
- "env_logger 0.11.3",
- "log 0.4.21",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "async-dslab-mp"
 version = "0.1.0"
 dependencies = [

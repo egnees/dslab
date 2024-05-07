@@ -3,6 +3,7 @@
 use super::context::Context;
 use crate::network::message::Message;
 
+/// Represents process trait running on node.
 pub trait Process {
     /// Called when a message is received.
     fn on_message(&mut self, msg: Message, from: String, ctx: Context) -> Result<(), String>;

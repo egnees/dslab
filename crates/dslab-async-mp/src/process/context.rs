@@ -100,6 +100,8 @@ impl Context {
         }
     }
 
+    /// Send message with key.
+
     /// Send local message.
     pub fn send_local(&self, msg: Message) {
         self.commons.borrow_mut().send_local_messages_count += 1;

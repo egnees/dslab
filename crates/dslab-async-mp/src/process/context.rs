@@ -71,7 +71,8 @@ impl Context {
         self.send_with_ack_tagged(msg, None, dst_proc, timeout).await
     }
 
-    /// Send message with key.
+    /// Send message with tag.
+    /// In pair with [`Context::send_recv_tag`].
     pub async fn send_with_tag<'a>(
         &'a self,
         msg: Message,
@@ -122,7 +123,14 @@ impl Context {
     }
 
     /// Send message without tag to the other process and wait for the message with tag.
-    async fn send_recv_tag<'a>(&'a self, msg: Message, tag: Tag, dst_proc: &'a str, timeout: f64) -> SendResult<()> {
+    /// In pair with [`Context::send_with_tag`].
+    pub async fn send_recv_with_tag<'a>(
+        &'a self,
+        msg: Message,
+        tag: Tag,
+        dst_proc: &'a str,
+        timeout: f64,
+    ) -> SendResult<Message> {
         let from = self.commons.borrow().process_name.clone();
         // Update send message count.
         if from != dst_proc {
@@ -144,7 +152,7 @@ impl Context {
             result = ctx.recv_event_by_key::<TaggedMessageDelivered>(tag).with_timeout(timeout).fuse() => {
                 match result {
                     AwaitResult::Timeout(_) => Err(SendError::Timeout),
-                    AwaitResult::Ok(_) => Ok(()),
+                    AwaitResult::Ok(e) => Ok(e.1.msg),
                 }
             },
             _ = ctx.recv_event_by_key_from::<MessageDropped>(network_id, event_id).fuse() => {
@@ -155,8 +163,25 @@ impl Context {
 
     /// Send local message.
     pub fn send_local(&self, msg: Message) {
-        self.commons.borrow_mut().send_local_messages_count += 1;
-        self.commons.borrow_mut().local_messages.push(msg);
+        let mut commons = self.commons.borrow_mut();
+        let msg_id = commons.send_local_messages_count;
+        let proc = commons.process_name.clone();
+
+        {
+            let control = commons.control_block.borrow();
+            let node = control.node_name.clone();
+            let time = control.ctx.time();
+            control.logger.borrow_mut().log(LogEntry::LocalMessageSent {
+                time,
+                msg_id: msg_id.to_string(),
+                node,
+                proc,
+                msg: msg.clone(),
+            });
+        }
+
+        commons.send_local_messages_count += 1;
+        commons.local_messages.push(msg);
     }
 
     /// Sets a timer with overriding delay of existing active timer.

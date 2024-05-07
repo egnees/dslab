@@ -3,12 +3,11 @@ use std::{cell::RefCell, rc::Rc};
 use dslab_core::{async_core::AwaitResult, cast, Event, EventHandler, Id, Simulation};
 
 use crate::{
-    log::{init::enable_console_log, logger::Logger},
+    log::logger::Logger,
     network::{
         event::{MessageDelivered, MessageDropped},
         register::register_network_key_getters,
     },
-    node,
 };
 
 use super::{message::Message, model::Network};
@@ -118,9 +117,10 @@ fn network_works() {
         let node1_ctx = node1_ctx.clone();
         let network = network.clone();
         node1_ctx.clone().spawn(async move {
-            let event_key = network
-                .borrow_mut()
-                .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2");
+            let event_key =
+                network
+                    .borrow_mut()
+                    .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2", None);
 
             let send_result = node1_ctx
                 .recv_event_by_key::<MessageDelivered>(event_key)
@@ -142,9 +142,10 @@ fn network_works() {
         let node1_ctx = node1_ctx.clone();
         let network = network.clone();
         node1_ctx.clone().spawn(async move {
-            let event_key = network
-                .borrow_mut()
-                .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2");
+            let event_key =
+                network
+                    .borrow_mut()
+                    .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2", None);
 
             let send_result = node1_ctx
                 .recv_event_by_key::<MessageDelivered>(event_key)
@@ -172,9 +173,10 @@ fn network_works() {
         let node1_ctx = node1_ctx.clone();
         let network = network.clone();
         node1_ctx.clone().spawn(async move {
-            let event_key = network
-                .borrow_mut()
-                .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2");
+            let event_key =
+                network
+                    .borrow_mut()
+                    .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc2", None);
 
             let send_result = node1_ctx
                 .recv_event_by_key::<MessageDelivered>(event_key)
@@ -199,9 +201,10 @@ fn network_works() {
         let node1_ctx = node1_ctx.clone();
         let network = network.clone();
         node1_ctx.clone().spawn(async move {
-            let event_key = network
-                .borrow_mut()
-                .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc1");
+            let event_key =
+                network
+                    .borrow_mut()
+                    .send_message_with_ack(Message::new("tip", "data"), "proc1", "proc1", None);
 
             let send_result = node1_ctx
                 .recv_event_by_key::<MessageDelivered>(event_key)

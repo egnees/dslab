@@ -11,7 +11,7 @@ use dslab_storage::storage::Storage;
 
 use crate::log::log_entry::LogEntry;
 use crate::log::logger::Logger;
-use crate::network::event::MessageDelivered;
+use crate::network::event::{MessageDelivered, TaggedMessageDelivered};
 use crate::network::message::Message;
 use crate::network::model::Network;
 use crate::process::context::Context;
@@ -331,6 +331,20 @@ impl EventHandler for Node {
                 src_node,
                 dst_proc,
                 dst_node: _,
+            } => {
+                let network_id = self.control.borrow().network.borrow().id();
+                if network_id != event.src {
+                    self.on_message_received(msg_id, dst_proc, msg, src_proc, src_node);
+                }
+            }
+            TaggedMessageDelivered {
+                msg_id,
+                msg,
+                src_proc,
+                src_node,
+                dst_proc,
+                dst_node: _,
+                tag: _,
             } => {
                 let network_id = self.control.borrow().network.borrow().id();
                 if network_id != event.src {

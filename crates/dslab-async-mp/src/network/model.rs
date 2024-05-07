@@ -14,8 +14,9 @@ use dslab_core::{EventHandler, Id};
 use crate::log::log_entry::LogEntry;
 use crate::log::logger::Logger;
 
-use super::event::{MessageDelivered, MessageDropped};
+use super::event::{MessageDelivered, MessageDropped, TaggedMessageDelivered};
 use super::message::Message;
+use super::tag::Tag;
 
 /// Represents a network that transmits messages between processes located on different nodes.
 pub struct Network {
@@ -350,7 +351,7 @@ impl Network {
     /// Reliable send message between two processes.
     /// It is guaranteed that message will be delivered exactly once and will not be corrupted.
     /// If two processes are not connected by the network, then error will be returned.
-    pub(crate) fn send_message_with_ack(&mut self, msg: Message, src: &str, dst: &str) -> EventKey {
+    pub(crate) fn send_message_with_ack(&mut self, msg: Message, src: &str, dst: &str, tag: Option<Tag>) -> EventKey {
         let msg_size = msg.size();
         let potential_event = self.next_msg_event(src.to_owned(), dst.to_owned(), msg);
         let event_key = potential_event.msg_id as EventKey;
@@ -382,7 +383,22 @@ impl Network {
 
             self.ctx
                 .emit_as(potential_event.clone(), self.ctx.id(), src_node_id, msg_delay);
-            self.ctx.emit_as(potential_event, src_node_id, dst_node_id, msg_delay);
+
+            if let Some(tag) = tag {
+                let event = TaggedMessageDelivered {
+                    msg_id: potential_event.msg_id,
+                    msg: potential_event.msg,
+                    src_proc: potential_event.src_proc,
+                    src_node: potential_event.src_node,
+                    dst_proc: potential_event.dst_proc,
+                    dst_node: potential_event.dst_node,
+                    tag,
+                };
+
+                self.ctx.emit_as(event, src_node_id, dst_node_id, msg_delay);
+            } else {
+                self.ctx.emit_as(potential_event, src_node_id, dst_node_id, msg_delay);
+            }
         }
 
         self.network_message_count += 1;
@@ -417,7 +433,7 @@ impl Network {
 }
 
 impl EventHandler for Network {
-    fn on(&mut self, event: Event) {
+    fn on(&mut self, _event: Event) {
         // do nothing
     }
 }

@@ -1,6 +1,6 @@
 //! Definition of context of the simulation for process.
 
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use dslab_core::async_core::AwaitResult;
 use futures::{select, Future, FutureExt};
@@ -8,9 +8,10 @@ use futures::{select, Future, FutureExt};
 use crate::{
     log::log_entry::LogEntry,
     network::{
-        event::{MessageDelivered, MessageDropped},
+        event::{MessageDelivered, MessageDropped, TaggedMessageDelivered},
         message::Message,
         result::{SendError, SendResult},
+        tag::Tag,
     },
     process::event::TimerFired,
     storage::{file::File, result::StorageResult},
@@ -67,6 +68,27 @@ impl Context {
 
     /// Send message to the other process and wait for the acknowledgement.
     pub async fn send_with_ack<'a>(&'a self, msg: Message, dst_proc: &'a str, timeout: f64) -> SendResult<()> {
+        self.send_with_ack_tagged(msg, None, dst_proc, timeout).await
+    }
+
+    /// Send message with key.
+    pub async fn send_with_tag<'a>(
+        &'a self,
+        msg: Message,
+        tag: Tag,
+        dst_proc: &'a str,
+        timeout: f64,
+    ) -> SendResult<()> {
+        self.send_with_ack_tagged(msg, Some(tag), dst_proc, timeout).await
+    }
+
+    async fn send_with_ack_tagged<'a>(
+        &'a self,
+        msg: Message,
+        tag: Option<Tag>,
+        dst_proc: &'a str,
+        timeout: f64,
+    ) -> SendResult<()> {
         let from = self.commons.borrow().process_name.clone();
         // Update send message count.
         if from != dst_proc {
@@ -79,7 +101,7 @@ impl Context {
             .borrow()
             .network
             .borrow_mut()
-            .send_message_with_ack(msg, &from, dst_proc);
+            .send_message_with_ack(msg, &from, dst_proc, tag);
 
         let network_id = self.commons.borrow().control_block.borrow().network.borrow().id();
         let ctx = self.commons.borrow().control_block.borrow().ctx.clone();
@@ -89,7 +111,6 @@ impl Context {
                 match result {
                     AwaitResult::Timeout(_) => Err(SendError::Timeout),
                     AwaitResult::Ok(_) => {
-                        self.commons.borrow_mut().received_message_cnt += 1;
                         Ok(())
                     },
                 }
@@ -100,7 +121,37 @@ impl Context {
         }
     }
 
-    /// Send message with key.
+    /// Send message without tag to the other process and wait for the message with tag.
+    async fn send_recv_tag<'a>(&'a self, msg: Message, tag: Tag, dst_proc: &'a str, timeout: f64) -> SendResult<()> {
+        let from = self.commons.borrow().process_name.clone();
+        // Update send message count.
+        if from != dst_proc {
+            self.commons.borrow_mut().send_message_cnt += 1;
+        }
+        let event_id = self
+            .commons
+            .borrow()
+            .control_block
+            .borrow()
+            .network
+            .borrow_mut()
+            .send_message_with_ack(msg, &from, dst_proc, None);
+
+        let network_id = self.commons.borrow().control_block.borrow().network.borrow().id();
+        let ctx = self.commons.borrow().control_block.borrow().ctx.clone();
+
+        select! {
+            result = ctx.recv_event_by_key::<TaggedMessageDelivered>(tag).with_timeout(timeout).fuse() => {
+                match result {
+                    AwaitResult::Timeout(_) => Err(SendError::Timeout),
+                    AwaitResult::Ok(_) => Ok(()),
+                }
+            },
+            _ = ctx.recv_event_by_key_from::<MessageDropped>(network_id, event_id).fuse() => {
+                Err(SendError::NotSent)
+            }
+        }
+    }
 
     /// Send local message.
     pub fn send_local(&self, msg: Message) {

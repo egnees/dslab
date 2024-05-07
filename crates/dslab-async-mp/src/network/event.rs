@@ -38,6 +38,7 @@ pub struct MessageDropped {
     pub dst_node: String,
 }
 
+/// Represents event which is appeared when [`send_wisth_tag`] method of `Context` is called.
 #[derive(Clone, Serialize)]
 pub struct TaggedMessageDelivered {
     /// Id of the delivered message.
@@ -58,19 +59,6 @@ pub struct TaggedMessageDelivered {
 
 impl From<MessageDelivered> for MessageDropped {
     fn from(value: MessageDelivered) -> Self {
-        Self {
-            msg_id: value.msg_id,
-            msg: value.msg,
-            src_proc: value.src_proc,
-            src_node: value.src_node,
-            dst_proc: value.dst_proc,
-            dst_node: value.dst_node,
-        }
-    }
-}
-
-impl From<TaggedMessageDelivered> for MessageDropped {
-    fn from(value: TaggedMessageDelivered) -> Self {
         Self {
             msg_id: value.msg_id,
             msg: value.msg,

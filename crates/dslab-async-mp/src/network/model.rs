@@ -394,7 +394,6 @@ impl Network {
                     dst_node: potential_event.dst_node,
                     tag,
                 };
-
                 self.ctx.emit_as(event, src_node_id, dst_node_id, msg_delay);
             } else {
                 self.ctx.emit_as(potential_event, src_node_id, dst_node_id, msg_delay);

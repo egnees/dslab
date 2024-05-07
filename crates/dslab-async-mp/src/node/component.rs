@@ -346,10 +346,8 @@ impl EventHandler for Node {
                 dst_node: _,
                 tag: _,
             } => {
-                let network_id = self.control.borrow().network.borrow().id();
-                if network_id != event.src {
-                    self.on_message_received(msg_id, dst_proc, msg, src_proc, src_node);
-                }
+                assert!(event.src != self.control.borrow().network.borrow().id());
+                self.on_message_received(msg_id, dst_proc, msg, src_proc, src_node);
             }
             TimerFired {
                 time: _,

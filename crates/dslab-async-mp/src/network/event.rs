@@ -38,7 +38,7 @@ pub struct MessageDropped {
     pub dst_node: String,
 }
 
-/// Represents event which is appeared when [`send_wisth_tag`] method of `Context` is called.
+/// Represents event which is appeared when [`send_with_tag`] method of `Context` is called.
 #[derive(Clone, Serialize)]
 pub struct TaggedMessageDelivered {
     /// Id of the delivered message.

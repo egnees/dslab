@@ -1,5 +1,5 @@
 pub mod component;
-pub mod control;
+pub mod interaction;
 
 #[cfg(test)]
 mod tests;

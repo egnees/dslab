@@ -20,7 +20,7 @@ use crate::process::event::TimerFired;
 use crate::process::process::Process;
 use crate::storage::file_manager::FileManager;
 
-use super::control::ControlBlock;
+use super::interaction::InteractionBlock;
 
 struct ProcessEntry {
     pub proc_impl: Box<dyn Process>,
@@ -37,7 +37,7 @@ enum State {
 pub struct Node {
     /// Identifier of simulation component.
     pub id: Id,
-    control: Rc<RefCell<ControlBlock>>,
+    control: Rc<RefCell<InteractionBlock>>,
     processes: HashMap<String, ProcessEntry>,
     state: State,
 }
@@ -53,7 +53,7 @@ impl Node {
         let id = ctx.id();
 
         let file_manager = FileManager::new(storage_model, ctx.clone());
-        let control_block = ControlBlock {
+        let control_block = InteractionBlock {
             network: net,
             file_manager,
             logger,

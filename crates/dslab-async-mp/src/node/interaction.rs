@@ -9,9 +9,9 @@ use crate::{log::logger::Logger, network::model::Network, storage::file_manager:
 ///! Definition of control block.
 
 /// Represents collection of the elements, which are used to interact with simulation.
-/// Every node owns its own [`ControlBlock`].
-/// [`ControlBlock`] is shared between different copies of context.
-pub struct ControlBlock {
+/// Every node owns its own [`InteractionBlock`].
+/// [`InteractionBlock`] is shared between different copies of context.
+pub struct InteractionBlock {
     /// Represents simulation network.
     pub network: Rc<RefCell<Network>>,
     /// Manages file in storage.

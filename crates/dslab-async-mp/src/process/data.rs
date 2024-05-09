@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use dslab_core::event::EventId;
 
-use crate::node::control::ControlBlock;
+use crate::node::interaction::InteractionBlock;
 
 use crate::network::message::Message;
 
@@ -25,11 +25,11 @@ pub struct ProcessData {
     /// Total number of sent local messages.
     pub send_local_messages_count: u64,
     /// Control block for interaction with simulation.
-    pub control_block: Rc<RefCell<ControlBlock>>,
+    pub control_block: Rc<RefCell<InteractionBlock>>,
 }
 
 impl ProcessData {
-    pub fn new(process_name: String, control_block: Rc<RefCell<ControlBlock>>) -> Self {
+    pub fn new(process_name: String, control_block: Rc<RefCell<InteractionBlock>>) -> Self {
         Self {
             process_name,
             pending_timers: HashMap::new(),

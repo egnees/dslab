@@ -87,6 +87,24 @@ impl FileManager {
         }
     }
 
+    /// Delete file with specified name.
+    /// If file with such name not exists,
+    /// [`NotFound`][`StorageError::NotFound`] error will be returned.
+    pub fn delete_file(&mut self, name: &str) -> StorageResult<()> {
+        let is_available = self.storage_wrapper.borrow().is_available();
+        match is_available {
+            false => Err(StorageError::Unavailable),
+            true => {
+                let remove_result = self.files_content.remove(name);
+                if let Some(_) = remove_result {
+                    Ok(())
+                } else {
+                    Err(StorageError::NotFound)
+                }
+            }
+        }
+    }
+
     /// Check if file with specified name exists.
     pub fn file_exists(&self, name: &str) -> StorageResult<bool> {
         let is_available = self.storage_wrapper.borrow().is_available();

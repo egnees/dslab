@@ -271,6 +271,16 @@ impl Context {
             .create_file(name)
     }
 
+    /// Remove file with specified name.
+    pub fn delete_file(&self, name: &str) -> StorageResult<()> {
+        self.commons
+            .borrow()
+            .control_block
+            .borrow_mut()
+            .file_manager
+            .delete_file(name)
+    }
+
     /// Check if file with specified name exists.
     pub fn file_exists(&self, name: &str) -> StorageResult<bool> {
         self.commons
